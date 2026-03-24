@@ -64,6 +64,7 @@ Create just the Web App, no need for a database as we're using an existing one.
 Once created, make sure to go into resource and check `Continuous deployment for the main container` under `Deployment Centre`.  
 
 ## Permissions  
+
 |Resource|Permission Type|Permission|Granted to|
 |---|---|---|---|
 |App Service|System Managed Identity|db_datareader <br>db_datawriter|Azure SQL Database|
