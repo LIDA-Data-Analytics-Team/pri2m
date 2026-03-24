@@ -3,7 +3,6 @@ azure-core==1.38.0
 azure-identity==1.25.1
 azure-keyvault-secrets==4.10.0
 beautifulsoup4==4.14.2
-Bottleneck @ file:///croot/bottleneck_1731058641041/work
 certifi==2026.1.4
 cffi==2.0.0
 charset-normalizer==3.4.4
@@ -14,28 +13,22 @@ django-entra-auth==1.16.0
 gunicorn==25.1.0
 idna==3.11
 isodate==0.7.2
-mkl-service==2.4.0
-mkl_fft @ file:///croot/mkl_fft_1751317925336/work
-mkl_random @ file:///croot/mkl_random_1751318527880/work
 msal==1.34.0
 msal-extensions==1.3.1
 mssql-django==1.6
-numexpr @ file:///croot/numexpr_1755766469354/work
 numpy==2.3.5
 packaging==26.0
 pandas==2.3.3
 pycparser==3.0
 PyJWT==2.10.1
 pyodbc==5.3.0
-python-dateutil @ file:///work/perseverance-python-buildout/croot/python-dateutil_1728385355105/work
-pytz @ file:///croot/pytz_1752135852232/work
+python-dateutil==2.9.0.post0
+pytz==2025.2
 requests==2.32.5
-setuptools==72.1.0
-six @ file:///croot/six_1744271502820/work
+six==1.17.0
 soupsieve==2.8
 sqlparse==0.5.3
 typing_extensions==4.15.0
-tzdata @ file:///croot/python-tzdata_1746123641790/work
+tzdata==2025.2
 urllib3==2.6.3
-wheel==0.45.1
 whitenoise==6.12.0
