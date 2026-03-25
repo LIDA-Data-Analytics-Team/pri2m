@@ -165,6 +165,7 @@ In the end I went with a single call to the model with the related data and conv
 
 Struggling to exclude model fields on SQL insert when updating records. I want to do this because I'd prefer the SQL Database to handle populating certain data fields like `ValidFrom` and `CreatedBy` with their database defaults, rather than having Django generate those values. Currently I am having to populate them in Django and insert the non-default values as all attempts at exclusion have just led to insertion of nulls... 
 
+I have actually found a way to allow the database to populate default values but it's relatively undesired for our purposes due to the way that the app connects to the database. We've simply got to exclude the fields from the models. Don't let Django see them at all! Would probably work just fine for `[ValidFrom] = getdate()` fields but `[CreatedBy] = suser_sname` appears to populate with the Object ID of the Identity used to make the connection (ie the Web Service if in deployment). Functionally useless!  
 
 # Forms
 
