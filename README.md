@@ -28,9 +28,9 @@ Well, everything really! But first thoughts:
     - ~~kristal references~~
     - data flow diagrams  
 - ~~Users and all that entails~~  
-- Transfer logging and asset register
-- DSAs 
-- Grants
+- ~~Transfer logging and asset register~~ *Need to create bespoke tables from `Create Tables for Transfers.sql`
+- ~~DSAs~~ 
+- ~~Grants~~ 
 - ~~Authentication~~  
 
 Functionality will need to at least equal current Prism software before we can think about deploying and using it.
