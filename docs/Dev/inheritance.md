@@ -2,7 +2,7 @@
 layout: default
 title: Template Inheritance
 nav_order: 3
-parent: Django initiation
+parent: Development
 has_children: false
 ---
 

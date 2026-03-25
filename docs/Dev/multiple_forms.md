@@ -2,7 +2,7 @@
 layout: default
 title: Multiple Forms
 nav_order: 5
-parent: Django initiation
+parent: Development
 has_children: false
 ---
 

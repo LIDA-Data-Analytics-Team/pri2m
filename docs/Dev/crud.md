@@ -2,7 +2,7 @@
 layout: default
 title: CRUD
 nav_order: 2
-parent: Django initiation
+parent: Development
 has_children: false
 ---
 

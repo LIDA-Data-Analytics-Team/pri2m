@@ -2,7 +2,7 @@
 layout: default
 title: Styling
 nav_order: 4
-parent: Django initiation
+parent: Development
 has_children: false
 ---
 

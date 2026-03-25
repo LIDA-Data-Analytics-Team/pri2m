@@ -2,7 +2,7 @@
 layout: default
 title: Validation
 nav_order: 6
-parent: Django initiation
+parent: Development
 has_children: false
 ---
 

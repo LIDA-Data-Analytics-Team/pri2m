@@ -2,7 +2,7 @@
 layout: default
 title: Deployment
 nav_order: 8
-parent: Django initiation
+parent: Development
 has_children: false
 ---
 
@@ -17,6 +17,24 @@ As described in Authentication the Pri2m app connects to Azure SQL Database usin
 
 Azure Web Service doesn't come equipped with ODBC drivers (!) so we have had to use Docker to containerise the app and install `msodbcsql18` and `unixodbc-dev`.  
 
+[Install the Microsoft ODBC driver for SQL Server (Linux)](https://learn.microsoft.com/en-us/sql/connect/odbc/linux-mac/installing-the-microsoft-odbc-driver-for-sql-server?view=sql-server-ver17&tabs=debian18-install%2Calpine17-install%2Cdebian8-install%2Credhat7-13-install%2Crhel7-offline)
+
+The base image used (`python:3.14-slim`) is a Debian distribution, so the dockerfile uses those commands from the above link. 
+
+```dockerfile
+# update data from apt-get repositories and install curl
+RUN apt-get update && apt-get -y install curl 
+# Download the package to configure the Microsoft repo
+RUN curl -sSL -O https://packages.microsoft.com/config/debian/$(grep VERSION_ID /etc/os-release | cut -d '"' -f 2 | cut -d '.' -f 1)/packages-microsoft-prod.deb
+# Install the package
+RUN dpkg -i packages-microsoft-prod.deb
+# Delete the file
+RUN rm packages-microsoft-prod.deb
+# Install ODBC drivers from Microsoft repo
+RUN apt-get update
+RUN ACCEPT_EULA=Y apt-get install -y msodbcsql18
+RUN apt-get install -y unixodbc-dev
+```
 
 ## Azure Resources  
 The following resources are needed (minimum):

@@ -2,7 +2,7 @@
 layout: default
 title: Authentication
 nav_order: 7
-parent: Django initiation
+parent: Development
 has_children: false
 ---
 

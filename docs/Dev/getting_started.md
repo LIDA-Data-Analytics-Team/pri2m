@@ -2,7 +2,7 @@
 layout: default
 title: Getting Started
 nav_order: 1
-parent: Django initiation
+parent: Development
 has_children: false
 ---
 
