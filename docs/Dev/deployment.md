@@ -104,4 +104,4 @@ Tag image to Container Registry
 Push the image to the Container Registry  
 `docker push pri2m.azurecr.io/pri2m-docker:latest`  
 
-Because the `Continuous deployment for the main container` has been checked in the App Service --> Deployment Centre, all pushes to the Container Registry (that match name & tag) will automagically roll out.  
+Because the `Continuous deployment for the main container` has been checked in the App Service --> Deployment Centre, all pushes to the Container Registry (that match name & tag) will automagically roll out when the Web Service is restarted.  
