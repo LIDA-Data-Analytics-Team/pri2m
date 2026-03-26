@@ -1,7 +1,13 @@
 from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.apps import apps
-from django.db.models import Max, Count, OuterRef, Subquery
+from django.db import transaction
+from django.db.models import Max, Count, OuterRef, Subquery, Q
+from django.utils import timezone
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.contrib import messages
+from django.contrib.auth.decorators import login_required, permission_required 
+from django.forms import formset_factory
 from .models import Tblproject, Tbluser, Tblprojectnotes, Tblprojectdocument, Tlkdocuments, Tblprojectplatforminfo \
     , Tblprojectdatallocation, Tbluserproject, Tblkristal, Tblprojectkristal, Tlkstage, Tlkfaculty, Tlkclassification \
     , Tlkuserstatus, Tblusernotes, Tblprojectkristal, tlkGrantStage, Tlklocation, Tblkristalnotes, Tbldsas, Tbldsanotes \
@@ -11,14 +17,8 @@ from .forms import  ProjectSearchForm, ProjectForm, ProjectNotesForm, ProjectDoc
     , GrantSearchForm, GrantNotesForm, DsaForm, DsaNotesForm, ProjectDsaForm, DsaSearchForm, DataOwnerCreateForm, TransferSearchForm \
     , TransferForm, TransferfileForm
 import pandas as pd
-from django.utils import timezone
-from django.db.models import Q
-from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from django.contrib import messages
 from collections import namedtuple
-from django.contrib.auth.decorators import login_required, permission_required 
 import json
-from django.forms import formset_factory
 
 def index(request):
     return render(request, 'Prism/index.html')
@@ -1720,9 +1720,14 @@ def transfercreate(request, projectnumber):
         transfer_form.fields['dsareviewed'].queryset = dsareviewed_choices
         transfer_form.fields['requestedby'].queryset = requestedby_choices
 
+    # Initialise with single empty form in formset
+    FileFormSet = formset_factory(TransferfileForm, extra=0, can_delete=True)
+    formset = FileFormSet()
+
     context = {'projectnumber': projectnumber
         , 'project_numbers': project_numbers
-        , 'transfer_form':transfer_form}
+        , 'transfer_form':transfer_form
+        , "formset": formset}
 
     if request.method == 'POST':
         # Retain inputted transfer details
@@ -1738,7 +1743,7 @@ def transfercreate(request, projectnumber):
             except Exception:
                 return HttpResponseBadRequest("Invalid JSON")
 
-            FileFormSet = formset_factory(TransferfileForm, extra=0)
+            FileFormSet = formset_factory(TransferfileForm, extra=0, can_delete=True)
             initial = []
             for p in files['paths']:
                 initial.append({"filename": p})
@@ -1755,43 +1760,45 @@ def transfercreate(request, projectnumber):
             return render(request, "Prism/transfer_new.html", context)
         
         else:
-            FileFormSet = formset_factory(TransferfileForm, extra=0)
+            FileFormSet = formset_factory(TransferfileForm, extra=0, can_delete=True)
             transfer_files_formset_new = FileFormSet(request.POST)
 
             if transfer_form_new.is_valid() and transfer_files_formset_new.is_valid():
-                parent_transfer = Tbltransferrequest.objects.create(
-                    projectnumber = transfer_form_new.cleaned_data['projectnumber']
-                    ,requesttype = transfer_form_new.cleaned_data['requesttype']
-                    ,requestedby = transfer_form_new.cleaned_data['requestedby'].usernumber
-                    ,requesternotes = transfer_form_new.cleaned_data['requesternotes']
-                    ,reviewedby = transfer_form_new.cleaned_data['reviewedby'].usernumber
-                    ,reviewdate = transfer_form_new.cleaned_data['reviewdate']
-                    ,reviewnotes = transfer_form_new.cleaned_data['reviewnotes']
-                    ,transfermethod = transfer_form_new.cleaned_data['transfermethod']
-                    ,transferfrom = transfer_form_new.cleaned_data['transferfrom']
-                    ,transferto = transfer_form_new.cleaned_data['transferto']
-                    ,dsareviewed = transfer_form_new.cleaned_data['dsareviewed'].documentid
-                    ,validfrom = timezone.now()
-                    ,validto = None
-                    ,createdby = request.user
-                    )
-
-                for transfer_files_form in transfer_files_formset_new:
-                    Tbltransferfile.objects.create(
-                        requestid = parent_transfer
-                        ,filename = transfer_files_form.cleaned_data['filename']
-                        ,trefilepath = transfer_files_form.cleaned_data['trefilepath']
-                        ,datarepofilepath = transfer_files_form.cleaned_data['datarepofilepath']
-                        ,transferaccepted = transfer_files_form.cleaned_data['transferaccepted']
-                        ,rejectionnotes = transfer_files_form.cleaned_data['rejectionnotes']
-                        ,assetid = transfer_files_form.cleaned_data['assetid']
+                with transaction.atomic():
+                    parent_transfer = Tbltransferrequest.objects.create(
+                        projectnumber = transfer_form_new.cleaned_data['projectnumber']
+                        ,requesttype = transfer_form_new.cleaned_data['requesttype']
+                        ,requestedby = transfer_form_new.cleaned_data['requestedby'].usernumber
+                        ,requesternotes = transfer_form_new.cleaned_data['requesternotes']
+                        ,reviewedby = transfer_form_new.cleaned_data['reviewedby'].usernumber
+                        ,reviewdate = transfer_form_new.cleaned_data['reviewdate']
+                        ,reviewnotes = transfer_form_new.cleaned_data['reviewnotes']
+                        ,transfermethod = transfer_form_new.cleaned_data['transfermethod']
+                        ,transferfrom = transfer_form_new.cleaned_data['transferfrom']
+                        ,transferto = transfer_form_new.cleaned_data['transferto']
+                        ,dsareviewed = transfer_form_new.cleaned_data['dsareviewed'].documentid
                         ,validfrom = timezone.now()
                         ,validto = None
                         ,createdby = request.user
-                    )
+                        )
 
-                messages.success(request, 'Transfer added to Prism successfully.')
-                return HttpResponseRedirect(f"/transfer/{parent_transfer.pk}")
+                    for transfer_files_form in transfer_files_formset_new:
+                        if transfer_files_form.cleaned_data['DELETE'] == False:
+                            Tbltransferfile.objects.create(
+                                requestid = parent_transfer
+                                ,filename = transfer_files_form.cleaned_data['filename']
+                                ,trefilepath = transfer_files_form.cleaned_data['trefilepath']
+                                ,datarepofilepath = transfer_files_form.cleaned_data['datarepofilepath']
+                                ,transferaccepted = transfer_files_form.cleaned_data['transferaccepted']
+                                ,rejectionnotes = transfer_files_form.cleaned_data['rejectionnotes']
+                                ,assetid = transfer_files_form.cleaned_data['assetid']
+                                ,validfrom = timezone.now()
+                                ,validto = None
+                                ,createdby = request.user
+                            )
+
+                    messages.success(request, 'Transfer added to Prism successfully.')
+                    return HttpResponseRedirect(f"/transfer/{parent_transfer.pk}")
             
             else:
                 context.update({'projectnumber': projectnumber

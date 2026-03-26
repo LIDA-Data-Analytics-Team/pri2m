@@ -83,36 +83,39 @@ Pri2m : Transfer - New
 
     {{ formset.management_form }}
 
-    <table class="table table-hover">
+    <table class="table table-hover" id="formset-table">
         <thead>
             <tr>
+                <th scope="col"><button type="button" class="btn btn-secondary" id="add-row" {% if projectnumber == "new" %}disabled="True"{% endif %}>Add File</button></th>
                 <th scope="col">File Name<br>
-                    <button type="button" onclick="pickDirectoryAndSend()" id="pick" {% if projectnumber == "new" %}disabled="True"{% endif %}>Choose a directory</button>
+                    <button type="button" class="btn btn-secondary" onclick="pickDirectoryAndSend()" id="pick" {% if projectnumber == "new" %}disabled="True"{% endif %}>Add directory</button>
                 </th>
                 <th scope="col">Existing Asset<br>
-                    <button type="button" class="copy-column" data-field="assetid" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
+                    <button type="button" class="btn btn-secondary copy-column" data-field="assetid" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
                 </th>
                 <th scope="col">Create Asset<br>
-                    <button type="button" class="copy-column" data-field="new_asset" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
+                    <button type="button" class="btn btn-secondary copy-column" data-field="new_asset" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
                 </th>
                 <th scope="col">TRE Path<br>
-                    <button type="button" class="copy-column" data-field="trefilepath" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
+                    <button type="button" class="btn btn-secondary copy-column" data-field="trefilepath" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
                 </th>
                 <th scope="col">Data Repo Path<br>
-                    <button type="button" class="copy-column" data-field="datarepofilepath" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
+                    <button type="button" class="btn btn-secondary copy-column" data-field="datarepofilepath" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
                 </th>
                 <th scope="col">Accept Transfer<br>
                     <label for="check-all"></label>
                     <input type="checkbox" id="check-all" {% if projectnumber == "new" %}disabled="True"{% endif %}>
                 </th>
                 <th scope="col">Rejection Notes<br>
-                    <button type="button" class="copy-column" data-field="rejectionnotes" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
+                    <button type="button" class="btn btn-secondary copy-column" data-field="rejectionnotes" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
                 </th>
             </tr>
         </thead>
         <tbody>
             {% for form in formset %}
-                <tr>
+                <tr class="form-row">
+                    <td style="display:none;">{{ form.DELETE }}</td>
+                    <td><button type="button" class="btn btn-danger remove-row" {% if projectnumber == "new" %}disabled="True"{% endif %}>remove</button></td>
                     <td>{{ form.filename.errors }}{{ form.filename|default_if_none:"" }}</td>
                     <td>{{ form.assetid.errors }}{{ form.assetid }}</td>
                     <td>{{ form.new_asset.errors }}{{ form.new_asset }}</td>
@@ -124,6 +127,30 @@ Pri2m : Transfer - New
             {% endfor %}
         </tbody>
     </table>
+
+    
+    <!-- EMPTY FORM TEMPLATE (HIDDEN) -->
+    <table style="display:none;">
+        <tbody id="empty-form">
+            <tr class="form-row">
+                <tr class="form-row">
+                    
+                    <td style="display:none;">{{ formset.empty_form.DELETE }}</td>
+
+                    <td><button type="button" class="btn btn-danger remove-row" >remove</button></td>
+                    <td>{{ formset.empty_form.filename }}</td>
+                    <td>{{ formset.empty_form.assetid }}</td>
+                    <td>{{ formset.empty_form.new_asset }}</td>
+                    <td>{{ formset.empty_form.trefilepath }}</td>
+                    <td>{{ formset.empty_form.datarepofilepath }}</td>
+                    <td>{{ formset.empty_form.transferaccepted }}</td>
+                    <td>{{ formset.empty_form.rejectionnotes }}</td>
+                </tr>
+            </tr>
+        </tbody>
+    </table>
+
+
 </form>
 
 <script>
@@ -213,6 +240,37 @@ Pri2m : Transfer - New
         const check = this.checked;
         document.querySelectorAll("input[type=checkbox][name$='-transferaccepted']").forEach(cb => {cb.checked = check;});
     });
+
+    document.addEventListener("DOMContentLoaded", function () {
+        const addBtn = document.getElementById("add-row");
+        const formsetTable = document.getElementById("formset-table").querySelector("tbody");
+        const emptyForm = document.getElementById("empty-form").innerHTML;
+        const totalForms = document.getElementById("id_form-TOTAL_FORMS");
+        let nextIndex = parseInt(totalForms.value);
+
+        // Add row
+        addBtn.addEventListener("click", function () {
+            let newFormHtml = emptyForm.replace(/__prefix__/g, nextIndex);
+            formsetTable.insertAdjacentHTML("beforeend", newFormHtml);
+
+            nextIndex++;
+            totalForms.value = parseInt(totalForms.value) + 1;
+        });
+
+        // Delegate remove button handling
+        formsetTable.addEventListener("click", function (e) {
+            if (!e.target.classList.contains("remove-row")) return;
+                const row = e.target.closest("tr");
+                // tick DELETE checkbox
+                const deleteInput = row.querySelector("input[name$='-DELETE']");
+                deleteInput.checked = true;
+                // hide visually but keep form fields for Django
+                row.style.display = "none";
+                // DO NOT change TOTAL_FORMS
+        });
+
+    });
+
 </script>
 
 {% endblock %}

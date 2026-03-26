@@ -479,7 +479,7 @@ class TransferForm(forms.Form):
             cleaned = super().clean()
 
             reviewdate = self.cleaned_data.get("reviewdate")
-            if reviewdate > timezone.now():
+            if reviewdate and reviewdate > timezone.now():
                 self.add_error(None, "Review Date cannot be later than today")
 
             return cleaned

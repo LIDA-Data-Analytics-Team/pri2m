@@ -38,7 +38,11 @@ When logging transfers we need to be able to submit multiple records with a sing
 
 Each Transfer File gets a form (`TransferfileForm`) for each file name in `{'files'}` of the POST request. The Transfer File forms are grouped into formsets and handled iteratively within the view and template.  
 
+If `can_delete=True` on `formset_factory` instantiation, each form in a formset has a `DELETE` field that if True skips validation. Removing a file from the New Transfer Files Table actually just sets this `DELETE` field to True and hides the row from the table. Logic in the View skips these forms from being inserted to the database.  
+
 ## Submitting multiple forms
 In most pages we wish to submit just a single form on a page at a time; for example project notes form wants to be handled seperately from the project membership form. In these cases it makes sense for each form to have it's own `csrf_token` and Submit button. For transfers though we want to populate up to three tables in the database at once; Request, Files & Assets.  
 
 This is acheived simply by wrapping all forms and formsets rendered in the template within a single `<form>` tag with a single `csrf_token` and Submit button. All forms and formsets will be in the POST request to be handled by the view.  
+
+Enclosing the creation of Request and File records within a `with transaction.atomic():` block means that if _any_ insert fails then all inserts are rolled back; no changes to database.  
