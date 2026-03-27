@@ -4,7 +4,7 @@ from .models import Tlkstage, Tblproject, Tlkclassification, Tlkfaculty, Tbluser
     , Tlkdocuments, Tblprojectplatforminfo, Tlkplatforminfo, Tblprojectdatallocation, Tlkuserstatus, Tbluserproject \
     , Tblusernotes, tlkGrantStage, Tlklocation, Tblkristal, Tblprojectkristal, Tblkristalnotes, Tbldsas, Tbldsadataowners \
     , Tbldsanotes, Tbldsasprojects, Tbltransferrequest, Tlktransferrequesttypes, Tlkfiletransfermethods, Tbltransferfileasset \
-    , Tbltransferfile
+    , Tbltransferfile, Tbldsdpcohort
 from django.utils import timezone
 
 class DateInput(forms.DateInput):
@@ -33,6 +33,7 @@ class ProjectSearchForm(forms.Form):
     faculty_id= forms.ModelChoiceField(label="Faculty", queryset=Tlkfaculty.objects.filter(validto__isnull=True).order_by("facultydescription"), required=False)
     laser= forms.BooleanField(label="LASER", required=False)
     internship= forms.BooleanField(label="DSDP", required=False)
+    cohort = forms.ModelChoiceField(label="DSDP Cohort", queryset=Tbldsdpcohort.objects.values_list("cohort", flat=True).distinct().order_by("cohort"), required=False)
         
     class Meta:
         model = Tblproject
@@ -171,6 +172,14 @@ class ProjectDatAllocationForm(forms.Form):
 
     class Meta:
         model=Tblprojectdatallocation
+
+class DSDPCohortForm(forms.Form):
+    dsdpcohortid = forms.IntegerField(widget = forms.HiddenInput(), required=False)
+    cohort = forms.CharField(widget=forms.TextInput(attrs={"placeholder": "Cohort identifier"}), label="DSDP Cohort", max_length=25, required=False)
+    projectnumber = forms.CharField(widget = forms.HiddenInput(), label="Project Number", disabled=True, max_length=5, required=False)
+
+    class Meta:
+        model=Tbldsdpcohort
 
 class KristalForm(forms.Form):
     kristalid = forms.IntegerField(widget = forms.HiddenInput(), required=False)

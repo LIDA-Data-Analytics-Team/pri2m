@@ -11,11 +11,12 @@ from django.forms import formset_factory
 from .models import Tblproject, Tbluser, Tblprojectnotes, Tblprojectdocument, Tlkdocuments, Tblprojectplatforminfo \
     , Tblprojectdatallocation, Tbluserproject, Tblkristal, Tblprojectkristal, Tlkstage, Tlkfaculty, Tlkclassification \
     , Tlkuserstatus, Tblusernotes, Tblprojectkristal, tlkGrantStage, Tlklocation, Tblkristalnotes, Tbldsas, Tbldsanotes \
-    , Tbldsasprojects, Tbldsadataowners, Tlktransferrequesttypes, Tbltransferrequest, Tbltransferfile, Tbltransferfileasset
+    , Tbldsasprojects, Tbldsadataowners, Tlktransferrequesttypes, Tbltransferrequest, Tbltransferfile, Tbltransferfileasset \
+    , Tbldsdpcohort
 from .forms import  ProjectSearchForm, ProjectForm, ProjectNotesForm, ProjectDocumentsForm, ProjectPlatformInfoForm \
     , ProjectDatAllocationForm, UserSearchForm, UserForm, UserProjectForm, UserNotesForm, KristalForm, ProjectKristalForm \
     , GrantSearchForm, GrantNotesForm, DsaForm, DsaNotesForm, ProjectDsaForm, DsaSearchForm, DataOwnerCreateForm, TransferSearchForm \
-    , TransferForm, TransferfileForm
+    , TransferForm, TransferfileForm, DSDPCohortForm
 import pandas as pd
 from collections import namedtuple
 import json
@@ -60,6 +61,8 @@ def projects(request):
                 if key == 'internship':
                     advanced_filter_query['internship__iexact'] = True
                     filter_list.append(f"DSDP = {True}")
+                if key == 'cohort':
+                    advanced_filter_query['projectnumber__in'] = Tbldsdpcohort.objects.filter(cohort=value).values_list('projectnumber')
 
     projects = Tblproject.objects.filter(
             Q(**filter_query, _connector=Q.OR)
@@ -82,18 +85,25 @@ def projects(request):
     users = Tbluser.objects.filter(
             validto__isnull=True
             ).values()
-    
-    df = pd.DataFrame(users)
+    users_df = pd.DataFrame(users)
+
+    dsdp_cohort = Tbldsdpcohort.objects.values().order_by('projectnumber', 'cohort')
+    dsdp_df = pd.DataFrame(dsdp_cohort)
+    dsdp_df = dsdp_df.groupby(['projectnumber'])['cohort'].apply(', '.join).reset_index()
 
     for project in projects:
         if project['pi'] is not None:
-            pi_index = df.index[df['usernumber'] == project['pi']].tolist()
-            pi_name = f"{df.at[pi_index[0],'firstname']} {df.at[pi_index[0],'lastname']}"
+            pi_index = users_df.index[users_df['usernumber'] == project['pi']].tolist()
+            pi_name = f"{users_df.at[pi_index[0],'firstname']} {users_df.at[pi_index[0],'lastname']}"
             project.update(pi=pi_name)
         if project['leadapplicant'] is not None:
-            leadapplicant_index = df.index[df['usernumber'] == project['leadapplicant']].tolist()
-            leadapplicant_name = f"{df.at[leadapplicant_index[0],'firstname']} {df.at[leadapplicant_index[0],'lastname']}"
+            leadapplicant_index = users_df.index[users_df['usernumber'] == project['leadapplicant']].tolist()
+            leadapplicant_name = f"{users_df.at[leadapplicant_index[0],'firstname']} {users_df.at[leadapplicant_index[0],'lastname']}"
             project.update(leadapplicant=leadapplicant_name)
+        if project['projectnumber'] in dsdp_df['projectnumber'].values:
+            dsdp_index = dsdp_df.index[dsdp_df['projectnumber'] == project['projectnumber']].tolist()
+            cohort = f"{dsdp_df.at[dsdp_index[0],'cohort']}"
+            project.update(portfolionumber=cohort)
 
     filter_string = ", ".join(filter_list)
     project_search_form = ProjectSearchForm()
@@ -163,6 +173,12 @@ def project(request, projectnumber):
                ,lastname = Subquery(lastnames)
     ).order_by("firstname", "lastname")
 
+    ## DSDP Cohort ##
+    dsdp_cohort = Tbldsdpcohort.objects.filter(
+        projectnumber=projectnumber
+    ).values(            
+    ).order_by("cohort")
+
     ## KRISTAL REFERENCES ##
     # Using OuterRef & Subquery to perform a lookup against Tblprojectkristal on Tbluserproject's projectnumber and add it to the model with annotate 
     projectkristalids = Tblprojectkristal.objects.filter(
@@ -223,6 +239,7 @@ def project(request, projectnumber):
     p_platform_info_form = ProjectPlatformInfoForm(prefix='p_platform')
     p_user_form = UserProjectForm(prefix='p_user')
     p_user_form.initial['projectnumber'] = projectnumber
+    dsdp_cohort_form = DSDPCohortForm(prefix='p_dsdp_cohort')
     p_kristal_form = KristalForm(prefix='p_kristal')
 
     project_numbers = Tblproject.objects.filter(
@@ -245,6 +262,8 @@ def project(request, projectnumber):
         , 'platforminfo': project_platform_info
         , 'platform_form': p_platform_info_form
         , 'members': project_membership
+        , 'dsdp_cohort': dsdp_cohort
+        , 'dsdp_cohort_form': dsdp_cohort_form
         , 'p_user_form': p_user_form
         , 'grants': kristal_refs
         , 'p_kristal_form': p_kristal_form
@@ -373,6 +392,19 @@ def project(request, projectnumber):
             else:
                 context['p_user_form']=p_user_form
         
+        elif 'p_dsdp_cohort-cohort' in request.POST:
+            dsdp_cohort_form = DSDPCohortForm(request.POST, prefix='p_dsdp_cohort')
+            if dsdp_cohort_form.is_valid():
+                insert_dsdp_cohort = Tbldsdpcohort(
+                    cohort = dsdp_cohort_form.cleaned_data['cohort']
+                    ,projectnumber = projectnumber
+                )
+                insert_dsdp_cohort.save()
+                messages.success(request, 'DSDP Cohort added to Project successfully.')
+                return HttpResponseRedirect(f"/project/{projectnumber}")
+            else:
+                context['dsdp_cohort_form']=dsdp_cohort_form
+
         elif 'p_kristal-kristalref' in request.POST:
             kristal_form = KristalForm(request.POST, prefix='p_kristal')
             if kristal_form.is_valid():
@@ -488,6 +520,13 @@ def project(request, projectnumber):
         # Do we have a Kristal Reference?
         if not kristal_refs:
             custom_errors.append("Missing Kristal Reference information")
+
+        # Is project in a DSDP Cohort without DSDP checked?
+        if not project['internship'] and dsdp_cohort:
+            custom_errors.append("Project is a member of a DSDP Cohort but Type:DSDP = False")
+        # Is project not in a DSDP Cohort with DSDP checked?
+        if project['internship'] and not dsdp_cohort:
+            custom_errors.append("Project is not a member of a DSDP Cohort but Type:DSDP = True")
 
         return render(request, 'Prism/project.html', context)
 
@@ -693,6 +732,11 @@ def projectdatallocation_remove(request, projectnumber, projectdatallocationid):
     ).values()
     update_record.update(validto = timezone.now())
     
+    return HttpResponseRedirect(f"/project/{projectnumber}")
+
+def dsdpcohort_remove(request, projectnumber, dsdpcohortid):
+    project_cohort = Tbldsdpcohort.objects.get(dsdpcohortid=dsdpcohortid)
+    project_cohort.delete()
     return HttpResponseRedirect(f"/project/{projectnumber}")
 
 @login_required

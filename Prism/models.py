@@ -148,6 +148,15 @@ class Tblprojectplatforminfo(models.Model):
         managed = False
         db_table = 'tblProjectPlatformInfo'
 
+class Tbldsdpcohort(models.Model):
+    dsdpcohortid = models.AutoField(db_column='DSDPCohortID', primary_key=True)  # Field name made lowercase.
+    cohort = models.CharField(db_column='Cohort', max_length=25, blank=True, null=True)  # Field name made lowercase.
+    projectnumber = models.CharField(db_column='ProjectNumber', max_length=25, blank=True, null=True)  # Field name made lowercase.
+
+    class Meta:
+        managed = False
+        db_table = 'tblDSDPCohort'
+
 
 class Tbluser(models.Model):
     userid = models.AutoField(db_column='UserID', primary_key=True)  # Field name made lowercase.
@@ -478,10 +487,6 @@ class Tbltransferfile(models.Model):
 class Tbltransferfileasset(models.Model):
     assetid = models.AutoField(db_column='AssetID', primary_key=True)  # Field name made lowercase.
     assetname = models.CharField(db_column='AssetName', max_length=500, blank=True, null=True)  # Field name made lowercase.
-    # dataowner = models.CharField(db_column='DataOwner', max_length=100, blank=True, null=True)  # Field name made lowercase.
-    # validfrom = models.DateTimeField(db_column='ValidFrom', blank=True, null=True)  # Field name made lowercase.
-    # validto = models.DateTimeField(db_column='ValidTo', blank=True, null=True)  # Field name made lowercase.
-    # createdby = models.CharField(db_column='CreatedBy', max_length=50, blank=True, null=True)  # Field name made lowercase.
 
     def __str__(self):
         return self.assetname or ""

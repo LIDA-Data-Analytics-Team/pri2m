@@ -296,6 +296,48 @@ Pri2m : {{ project.projectnumber }}
                                 </div>
                             </div>
                         </div>
+
+                        <legend style="text-align: left;">DSDP Cohort</legend>
+                        <div class="accordion" id="accordionDsdpCohort">
+                            <div class="accordion-item">
+                                <h2 class="accordion-header" id="headingDsdpCohort">
+                                    <button class="accordion-button collapsed" type="button" data-bs-toggle="collapse" data-bs-target="#collapseDsdpCohort" aria-expanded="false" aria-controls="collapseDsdpCohort">
+                                        DSDP Cohort
+                                    </button>
+                                </h2>
+                                <div id="collapseDsdpCohort" class="accordion-collapse collapse" aria-labelledby="headingDsdpCohort" data-bs-parent="#accordionDsdpCohort">
+                                    <div class="accordion-body">
+                                        <form action="" method="POST">
+                                            {% csrf_token %}
+                                            <fieldset>
+                                                <div class="input-group">
+                                                    {{ dsdp_cohort_form.cohort }}
+                                                    {{ dsdp_cohort_form.projectnumber.as_hidden }}
+                                                    <input class="btn btn-primary" type="submit" value="Add Cohort">
+                                                </div>
+                                            </fieldset>
+                                        </form>
+                                        <table class="table table-hover">
+                                            <thead>
+                                                <tr>
+                                                    <th scope="col">Cohort</th>
+                                                    <th scope="col"></th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for cohort in dsdp_cohort %}
+                                                <tr>
+                                                    <td>{{ cohort.cohort }}</td>
+                                                    <td><a href='/project/{{ project.projectnumber }}/remove/dsdpcohort/{{ cohort.dsdpcohortid }}'>x</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
                     </div>
                     
                     <div class="col-md-5">
