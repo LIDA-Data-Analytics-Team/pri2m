@@ -2,7 +2,7 @@
 
 Documentation available via GitHub pages here:
 
-[https://adamkeeley.github.io/pri2m/](https://adamkeeley.github.io/pri2m/)
+[https://lida-data-analytics-team.github.io/pri2m/](https://lida-data-analytics-team.github.io/pri2m/)
 
 TODO:
 
