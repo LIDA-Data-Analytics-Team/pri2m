@@ -63,6 +63,7 @@ def projects(request):
                     filter_list.append(f"DSDP = {True}")
                 if key == 'cohort':
                     advanced_filter_query['projectnumber__in'] = Tbldsdpcohort.objects.filter(cohort=value).values_list('projectnumber')
+                    filter_list.append(f"DSDP Cohort = {value}")
 
     projects = Tblproject.objects.filter(
             Q(**filter_query, _connector=Q.OR)
