@@ -179,8 +179,10 @@ Pri2m : {{ project.projectnumber }}
                                                 <button type="button" 
                                                     class="btn btn-outline-danger btn-sm" 
                                                     data-bs-toggle="modal" 
-                                                    data-bs-target="#remove_datallocation" 
-                                                    data-bs-url="{% url 'projectdatallocation_remove' project.projectnumber item.projectdatallocationid %}">
+                                                    data-bs-target="#confirmModal" 
+                                                    data-bs-url="{% url 'projectdatallocation_remove' project.projectnumber item.projectdatallocationid %}"
+                                                    data-bs-title="Remove DAT Allocation from Project?"
+                                                    data-bs-body="Are you sure you wish to remove the DAT Allocation period from this Project?">
                                                 x
                                                 </button>
                                             </td>
@@ -250,7 +252,17 @@ Pri2m : {{ project.projectnumber }}
                                                     <tr>
                                                         <td>{{ item.platforminfoid__platforminfodescription }}</td>
                                                         <td>{{ item.projectplatforminfo }}</td>
-                                                        <td><a href='/project/{{ project.projectnumber }}/remove/platform/{{ item.projectplatforminfoid }}'>x</td>
+                                                        <td>
+                                                            <button type="button" 
+                                                                class="btn btn-outline-danger btn-sm" 
+                                                                data-bs-toggle="modal" 
+                                                                data-bs-target="#confirmModal" 
+                                                                data-bs-url="{% url 'projectplatforminfo_remove' project.projectnumber item.projectplatforminfoid %}"
+                                                                data-bs-title="Remove Platform Information from Project?"
+                                                                data-bs-body="Are you sure you wish to remove the Platform Information from this Project?">
+                                                            x
+                                                            </button>
+                                                        </td>
                                                     </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -296,7 +308,17 @@ Pri2m : {{ project.projectnumber }}
                                                 {% for member in members %}
                                                 <tr>
                                                     <td><a href='/user/{{ member.usernumber }}'>{{ member.firstname }} {{ member.lastname }}</a></td>
-                                                    <td><a href='/remove/userproject/{{ member.userprojectid }}'>x</td>
+                                                    <td>
+                                                        <button type="button" 
+                                                            class="btn btn-outline-danger btn-sm" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#confirmModal" 
+                                                            data-bs-url="{% url 'userproject_remove' member.userprojectid %}"
+                                                            data-bs-title="Remove Member from Project team?"
+                                                            data-bs-body="Are you sure you wish to remove the Member from this Project?">
+                                                        x
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -337,7 +359,17 @@ Pri2m : {{ project.projectnumber }}
                                                 {% for cohort in dsdp_cohort %}
                                                 <tr>
                                                     <td>{{ cohort.cohort }}</td>
-                                                    <td><a href='/project/{{ project.projectnumber }}/remove/dsdpcohort/{{ cohort.dsdpcohortid }}'>x</td>
+                                                    <td>
+                                                        <button type="button" 
+                                                            class="btn btn-outline-danger btn-sm" 
+                                                            data-bs-toggle="modal" 
+                                                            data-bs-target="#confirmModal" 
+                                                            data-bs-url="{% url 'dsdpcohort_remove' project.projectnumber cohort.dsdpcohortid %}"
+                                                            data-bs-title="Remove Cohort from Project?"
+                                                            data-bs-body="Are you sure you wish to remove the DSDP Cohort from this Project?">
+                                                        x
+                                                        </button>
+                                                    </td>
                                                 </tr>
                                                 {% endfor %}
                                             </tbody>
@@ -371,7 +403,17 @@ Pri2m : {{ project.projectnumber }}
                                 {% for grant in grants %}
                                     <tr>
                                         <td>{{ grant.kristalref }}</td>
-                                        <td><a href='/remove/projectkristal/{{ grant.projectkristalid }}'>x</td>
+                                        <td>
+                                            <button type="button" 
+                                                class="btn btn-outline-danger btn-sm" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#confirmModal" 
+                                                data-bs-url="{% url 'projectkristal_remove' grant.projectkristalid %}"
+                                                data-bs-title="Remove Grant from Project?"
+                                                data-bs-body="Are you sure you wish to remove this Kristal Reference from this Project?">
+                                            x
+                                            </button>
+                                        </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>
@@ -500,16 +542,16 @@ Pri2m : {{ project.projectnumber }}
     </div>
 </div>
 
-<!-- Confirmation modal -->
-<div class="modal fade" id="remove_datallocation" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+<!-- Generic confirmation modal -->
+<div class="modal fade" id="confirmModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
   <div class="modal-dialog">
     <div class="modal-content">
       <div class="modal-header">
-        <h5 class="modal-title" id="staticBackdropLabel">Remove DAT Allocation from Project?</h5>
+        <h5 class="modal-title" id="staticBackdropLabel">Confirmation</h5>
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        Are you sure you wish to remove the DAT Allocation period from this project?
+        Confirm to proceed.
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
@@ -521,13 +563,24 @@ Pri2m : {{ project.projectnumber }}
 
 <script>
 
-// When confirmation modal loads, this script assigns `data-bs-url` from the button that was clicked to trigger it to the confirmation button of the modal
-const confirmModal = document.getElementById('remove_datallocation');
+// When confirmation modal loads, this script assigns specifics from the trigger button to the generic confirmation modal
+// https://getbootstrap.com/docs/5.0/components/modal/#varying-modal-content
+var confirmModal = document.getElementById('confirmModal')
 confirmModal.addEventListener('show.bs.modal', function (event) {
-    const triggerBtn = event.relatedTarget;
-    const url = triggerBtn.getAttribute('data-bs-url');
-    document.getElementById('confirmButton').href = url;
-});
+    // Button that triggered the modal
+    var button = event.relatedTarget
+    // Extract info from data-bs-* attributes
+    var url = button.getAttribute('data-bs-url')
+    var title = button.getAttribute('data-bs-title')
+    var body = button.getAttribute('data-bs-body')
+    // Update the modal's content.
+    var confirmButton = document.getElementById('confirmButton')
+    var modalTitle = confirmModal.querySelector('.modal-title')
+    var modalBody = confirmModal.querySelector('.modal-body')
+    confirmButton.href = url
+    modalTitle.textContent = title
+    modalBody.textContent = body
+})
 
 </script>
 
