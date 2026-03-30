@@ -182,7 +182,7 @@ Pri2m : {{ project.projectnumber }}
                                                     data-bs-target="#confirmModal" 
                                                     data-bs-url="{% url 'projectdatallocation_remove' project.projectnumber item.projectdatallocationid %}"
                                                     data-bs-title="Remove DAT Allocation from Project?"
-                                                    data-bs-body="Are you sure you wish to remove the DAT Allocation period from this Project?">
+                                                    data-bs-body="Remove DAT Allocation: {{ item.fte }}% from {{ item.fromdate | date:'Y-m-d' }} to {{ item.todate | date:'Y-m-d' }}&#10;from Project: {{project.projectnumber}}?">
                                                 x
                                                 </button>
                                             </td>
@@ -259,7 +259,7 @@ Pri2m : {{ project.projectnumber }}
                                                                 data-bs-target="#confirmModal" 
                                                                 data-bs-url="{% url 'projectplatforminfo_remove' project.projectnumber item.projectplatforminfoid %}"
                                                                 data-bs-title="Remove Platform Information from Project?"
-                                                                data-bs-body="Are you sure you wish to remove the Platform Information from this Project?">
+                                                                data-bs-body="Remove {{ item.platforminfoid__platforminfodescription }}: {{ item.projectplatforminfo }}&#10;from Project: {{project.projectnumber}}?">
                                                             x
                                                             </button>
                                                         </td>
@@ -315,7 +315,7 @@ Pri2m : {{ project.projectnumber }}
                                                             data-bs-target="#confirmModal" 
                                                             data-bs-url="{% url 'userproject_remove' member.userprojectid %}"
                                                             data-bs-title="Remove User from Project team?"
-                                                            data-bs-body="Are you sure you wish to remove this User from this Project?">
+                                                            data-bs-body="Remove {{ member.firstname }} {{ member.lastname }}&#10;from Project: {{project.projectnumber}}?">
                                                         x
                                                         </button>
                                                     </td>
@@ -365,8 +365,8 @@ Pri2m : {{ project.projectnumber }}
                                                             data-bs-toggle="modal" 
                                                             data-bs-target="#confirmModal" 
                                                             data-bs-url="{% url 'dsdpcohort_remove' project.projectnumber cohort.dsdpcohortid %}"
-                                                            data-bs-title="Remove Cohort from Project?"
-                                                            data-bs-body="Are you sure you wish to remove the DSDP Cohort from this Project?">
+                                                            data-bs-title="Remove Project from Cohort?"
+                                                            data-bs-body="Remove Project: {{project.projectnumber}}&#10;from DSDP Cohort: {{ cohort.cohort }}?">
                                                         x
                                                         </button>
                                                     </td>
@@ -410,7 +410,7 @@ Pri2m : {{ project.projectnumber }}
                                                 data-bs-target="#confirmModal" 
                                                 data-bs-url="{% url 'projectkristal_remove' grant.projectkristalid %}"
                                                 data-bs-title="Remove Grant from Project?"
-                                                data-bs-body="Are you sure you wish to remove this Kristal Reference from this Project?">
+                                                data-bs-body="Remove Kristal Reference: {{ grant.kristalref }}&#10;from Project: {{ project.projectnumber }}?">
                                             x
                                             </button>
                                         </td>

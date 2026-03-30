@@ -68,7 +68,7 @@ Pri2m : {{ projectnumber }} Project Docs
                         data-bs-target="#confirmModal" 
                         data-bs-url="{% url 'projectdocs_action' projectnumber doctypeurl 'remove' doc.pdid%}"
                         data-bs-title="Remove Document from Project?"
-                        data-bs-body="Are you sure you wish to remove this Document from this Project?">
+                        data-bs-body="Remove Document: {{ doc.documenttype__documentdescription }} v{{ doc.versionnumber }}&#10;from Project: {{projectnumber}}?">
                     x
                     </button>
                 </td>

@@ -112,7 +112,7 @@ Pri2m : {{ dsa.dsaname|default_if_none:"DSA" }}
                                                 data-bs-target="#confirmModal" 
                                                 data-bs-url="{% url 'projectdsa_remove' item.dpid %}"
                                                 data-bs-title="Remove Project from DSA?"
-                                                data-bs-body="Are you sure you wish to remove this Project from this DSA?">
+                                                data-bs-body="Remove Project: {{ item.project }}&#10;from DSA: {{ dsa.dsaname }}?">
                                             x
                                             </button>
                                         </td>

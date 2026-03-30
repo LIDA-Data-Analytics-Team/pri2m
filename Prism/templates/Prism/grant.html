@@ -6,7 +6,7 @@ Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
 
 {% block content %}
 
-<h1>Grant - {{ grant.kristalref }} - {{ grant.kristalname }}</h1>
+<h1>Grant - {{ grant.kristalref }} - {{ grant.kristalname|default_if_none:"" }}</h1>
 
 {% if custom_errors %}
 <ul>
@@ -107,7 +107,7 @@ Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
                                     data-bs-target="#confirmModal" 
                                     data-bs-url="{% url 'projectkristal_remove' item.projectkristalid %}"
                                     data-bs-title="Remove Project from Grant?"
-                                    data-bs-body="Are you sure you wish to remove this Project from this Kristal Reference?">
+                                    data-bs-body="Remove Project: {{ item.projectnumber }}&#10;from Kristal Reference: {{ grant.kristalref }}?">
                                 x
                                 </button>
                             </td>
