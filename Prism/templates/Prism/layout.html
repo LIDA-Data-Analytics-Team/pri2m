@@ -81,6 +81,47 @@
     </nav>
     {% block content %}
     {% endblock %}
+
+    <!-- Generic confirmation modal -->
+    <div class="modal fade" id="confirmModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">Confirmation</h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            Confirm to proceed.
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <a type="button" id="confirmButton" class="btn btn-primary">Confirm</a>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      // When confirmation modal loads, this script assigns specifics from the trigger button to the generic confirmation modal
+      // https://getbootstrap.com/docs/5.0/components/modal/#varying-modal-content
+      var confirmModal = document.getElementById('confirmModal')
+      confirmModal.addEventListener('show.bs.modal', function (event) {
+          // Button that triggered the modal
+          var button = event.relatedTarget
+          // Extract info from data-bs-* attributes
+          var url = button.getAttribute('data-bs-url')
+          var title = button.getAttribute('data-bs-title')
+          var body = button.getAttribute('data-bs-body')
+          // Update the modal's content.
+          var confirmButton = document.getElementById('confirmButton')
+          var modalTitle = confirmModal.querySelector('.modal-title')
+          var modalBody = confirmModal.querySelector('.modal-body')
+          confirmButton.href = url
+          modalTitle.textContent = title
+          modalBody.textContent = body
+      })
+    </script>
+
   </div>
 </body>
 
