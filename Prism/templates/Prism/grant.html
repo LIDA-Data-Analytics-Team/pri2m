@@ -100,7 +100,17 @@ Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
                         <tr>
                             <td><a href='/project/{{ item.projectnumber }}'>{{ item.projectnumber }}</td>
                             <td>{{ item.projectname }}</td>
-                            <td><a href='/remove/projectkristal/{{ item.projectkristalid }}'>x</td>
+                            <td>
+                                <button type="button" 
+                                    class="btn btn-outline-danger btn-sm" 
+                                    data-bs-toggle="modal" 
+                                    data-bs-target="#confirmModal" 
+                                    data-bs-url="{% url 'projectkristal_remove' item.projectkristalid %}"
+                                    data-bs-title="Remove Project from Grant?"
+                                    data-bs-body="Are you sure you wish to remove this Project from this Kristal Reference?">
+                                x
+                                </button>
+                            </td>
                         </tr>
                     {% endfor %}
                 </tbody>

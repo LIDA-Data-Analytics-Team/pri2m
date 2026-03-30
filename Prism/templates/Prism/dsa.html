@@ -105,7 +105,17 @@ Pri2m : {{ dsa.dsaname|default_if_none:"DSA" }}
                                     <tr>
                                         <td><a href='/project/{{ item.project }}'>{{ item.project }}</td>
                                         <td>{{ item.projectname }}</td>
-                                        <td><a href='/remove/projectdsa/{{ item.dpid }}'>x</td>
+                                        <td>
+                                            <button type="button" 
+                                                class="btn btn-outline-danger btn-sm" 
+                                                data-bs-toggle="modal" 
+                                                data-bs-target="#confirmModal" 
+                                                data-bs-url="{% url 'projectdsa_remove' item.dpid %}"
+                                                data-bs-title="Remove Project from DSA?"
+                                                data-bs-body="Are you sure you wish to remove this Project from this DSA?">
+                                            x
+                                            </button>
+                                        </td>
                                     </tr>
                                 {% endfor %}
                             </tbody>

@@ -57,11 +57,21 @@ Pri2m : {{ projectnumber }} Project Docs
                 <td>{{ doc.submitted | date:"Y-m-d" }}</td>
                 <td>{{ doc.accepted | date:"Y-m-d" }}</td>
                 {% if doc.accepted %}
-                    <td><a href='/project/{{ projectnumber }}/docs/{{ doctypeurl }}/withdraw/{{ doc.pdid }}'>Withdraw</td>
+                    <td><a type="button" class="btn btn-outline-secondary" href="{% url 'projectdocs_action' projectnumber doctypeurl 'withdraw' doc.pdid%}">Withdraw</td>
                 {% else %}
-                    <td><a href='/project/{{ projectnumber }}/docs/{{ doctypeurl }}/accept/{{ doc.pdid }}'>Accept</td>
+                    <td><a type="button" class="btn btn-outline-secondary" href="{% url 'projectdocs_action' projectnumber doctypeurl 'accept' doc.pdid%}">Accept</td>
                 {% endif %}
-                <td><a href='/project/{{ projectnumber }}/docs/{{ doctypeurl }}/remove/{{ doc.pdid }}'>x</td>
+                <td>
+                    <button type="button" 
+                        class="btn btn-outline-danger btn-sm" 
+                        data-bs-toggle="modal" 
+                        data-bs-target="#confirmModal" 
+                        data-bs-url="{% url 'projectdocs_action' projectnumber doctypeurl 'remove' doc.pdid%}"
+                        data-bs-title="Remove Document from Project?"
+                        data-bs-body="Are you sure you wish to remove this Document from this Project?">
+                    x
+                    </button>
+                </td>
             </tr>
         {% endfor %}
     </tbody>
