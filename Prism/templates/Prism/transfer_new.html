@@ -86,28 +86,28 @@ Pri2m : Transfer - New
     <table class="table table-hover" id="formset-table">
         <thead>
             <tr>
-                <th scope="col"><button type="button" class="btn btn-outline-secondary btn-sm" id="add-row" {% if projectnumber == "new" %}disabled="True"{% endif %}>Add File</button></th>
+                <th scope="col"><button type="button" class="btn btn-outline-secondary btn-sm" id="add-row" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Manually enter singular file names">Add File</button></th>
                 <th scope="col">File Name<br>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="pickDirectoryAndSend()" id="pick" {% if projectnumber == "new" %}disabled="True"{% endif %}>Add directory</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="pickDirectoryAndSend()" id="pick" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="List all files in a directory">Add directory</button>
                 </th>
                 <th scope="col">Existing Asset<br>
-                    <button type="button" class="btn btn-outline-secondary btn-sm copy-column" data-field="assetid" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm copy-column" data-field="assetid" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Copy top value to all rows in column">↓</button>
                 </th>
                 <th scope="col">Create Asset<br>
-                    <button type="button" class="btn btn-outline-secondary btn-sm copy-column" data-field="new_asset" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm copy-column" data-field="new_asset" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Copy top value to all rows in column">↓</button>
                 </th>
                 <th scope="col">TRE Path<br>
-                    <button type="button" class="btn btn-outline-secondary btn-sm copy-column" data-field="trefilepath" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm copy-column" data-field="trefilepath" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Copy top value to all rows in column">↓</button>
                 </th>
                 <th scope="col">Data Repo Path<br>
-                    <button type="button" class="btn btn-outline-secondary btn-sm copy-column" data-field="datarepofilepath" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm copy-column" data-field="datarepofilepath" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Copy top value to all rows in column">↓</button>
                 </th>
                 <th scope="col">Accept Transfer<br>
                     <label for="check-all"></label>
-                    <input type="checkbox" id="check-all" {% if projectnumber == "new" %}disabled="True"{% endif %}>
+                    <input type="checkbox" id="check-all" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Check/uncheck all rows in column">
                 </th>
                 <th scope="col">Rejection Notes<br>
-                    <button type="button" class="btn btn-outline-secondary btn-sm copy-column" data-field="rejectionnotes" {% if projectnumber == "new" %}disabled="True"{% endif %}>↓</button>
+                    <button type="button" class="btn btn-outline-secondary btn-sm copy-column" data-field="rejectionnotes" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Copy top value to all rows in column">↓</button>
                 </th>
             </tr>
         </thead>
@@ -115,7 +115,7 @@ Pri2m : Transfer - New
             {% for form in formset %}
                 <tr class="form-row">
                     <td style="display:none;">{{ form.DELETE }}</td>
-                    <td><button type="button" class="btn btn-outline-danger btn-sm remove-row" {% if projectnumber == "new" %}disabled="True"{% endif %}>remove</button></td>
+                    <td><button type="button" class="btn btn-outline-danger btn-sm remove-row" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Remove row">x</button></td>
                     <td>{{ form.filename.errors }}{{ form.filename|default_if_none:"" }}</td>
                     <td>{{ form.assetid.errors }}{{ form.assetid }}</td>
                     <td>{{ form.new_asset.errors }}{{ form.new_asset }}</td>
@@ -137,7 +137,7 @@ Pri2m : Transfer - New
                     
                     <td style="display:none;">{{ formset.empty_form.DELETE }}</td>
 
-                    <td><button type="button" class="btn btn-outline-danger btn-sm remove-row" >x</button></td>
+                    <td><button type="button" class="btn btn-outline-danger btn-sm remove-row" data-bs-toggle="tooltip" data-bs-placement="top" title="Remove row">x</button></td>
                     <td>{{ formset.empty_form.filename }}</td>
                     <td>{{ formset.empty_form.assetid }}</td>
                     <td>{{ formset.empty_form.new_asset }}</td>
