@@ -402,7 +402,7 @@ Pri2m : {{ project.projectnumber }}
                             <tbody>
                                 {% for grant in grants %}
                                     <tr>
-                                        <td>{{ grant.kristalref }}</td>
+                                        <td><a href="{% url 'grant' grant.kristalnumber %}">{{ grant.kristalref }}</a></td>
                                         <td>
                                             <button type="button" 
                                                 class="btn btn-outline-danger btn-sm" 
