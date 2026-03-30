@@ -94,8 +94,11 @@
             Confirm to proceed.
           </div>
           <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-            <a type="button" id="confirmButton" class="btn btn-primary">Confirm</a>
+            <button type="button" id="cancelButton" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+            <a type="button" id="confirmButton" class="btn btn-primary">
+              <span class="default-text">Confirm</span>
+              <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+            </a>
           </div>
         </div>
       </div>
@@ -120,6 +123,16 @@
           modalTitle.textContent = title
           modalBody.textContent = body
       })
+
+      document.getElementById("confirmButton").addEventListener("click", function () {
+          this.classList.add("disabled");
+          this.style.pointerEvents = "none";
+          document.getElementById("cancelButton").classList.add("disabled");
+
+          this.querySelector(".default-text").classList.add("d-none");
+          this.querySelector(".spinner-border").classList.remove("d-none");
+      });
+
     </script>
 
   </div>
