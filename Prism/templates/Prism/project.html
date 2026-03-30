@@ -174,7 +174,16 @@ Pri2m : {{ project.projectnumber }}
                                             <td style="white-space: nowrap;">{{ item.todate | date:"Y-m-d" }}</td>
                                             <td>{{ item.fte }}</td>
                                             <td>{{ item.account }}</td>
-                                            <td><a href='/project/{{ project.projectnumber }}/remove/datallocation/{{item.projectdatallocationid}}'>x</td>
+
+                                            <td>
+                                                <button type="button" 
+                                                    class="btn btn-outline-danger btn-sm" 
+                                                    data-bs-toggle="modal" 
+                                                    data-bs-target="#remove_datallocation" 
+                                                    data-bs-url="{% url 'projectdatallocation_remove' project.projectnumber item.projectdatallocationid %}">
+                                                x
+                                                </button>
+                                            </td>
                                         </tr>
                                     {% endfor %}
                                 </tbody>
@@ -490,5 +499,36 @@ Pri2m : {{ project.projectnumber }}
 
     </div>
 </div>
+
+<!-- Confirmation modal -->
+<div class="modal fade" id="remove_datallocation" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="staticBackdropLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="staticBackdropLabel">Remove DAT Allocation from Project?</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        Are you sure you wish to remove the DAT Allocation period from this project?
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+        <a type="button" id="confirmButton" class="btn btn-primary">Confirm</a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+
+// When confirmation modal loads, this script assigns `data-bs-url` from the button that was clicked to trigger it to the confirmation button of the modal
+const confirmModal = document.getElementById('remove_datallocation');
+confirmModal.addEventListener('show.bs.modal', function (event) {
+    const triggerBtn = event.relatedTarget;
+    const url = triggerBtn.getAttribute('data-bs-url');
+    document.getElementById('confirmButton').href = url;
+});
+
+</script>
 
 {% endblock %}
