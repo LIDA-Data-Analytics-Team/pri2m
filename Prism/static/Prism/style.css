@@ -68,3 +68,7 @@ table {
 .modal-body {
     white-space: pre-line;
 }
+
+.warning-row td {
+    color: red;
+}

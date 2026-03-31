@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.apps import apps
 from django.db import transaction
-from django.db.models import Max, Count, OuterRef, Subquery, Q
+from django.db.models import Max, Count, OuterRef, Subquery, Q, Case, When, BooleanField
 from django.utils import timezone
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
@@ -1323,14 +1323,18 @@ def dsas (request):
             , "iso27001"
             , "requiresencryption"
             , "noremoteaccess"
+        ).annotate(is_expired=Case(When(expirydate__lt=timezone.now(), then=True),default=False,output_field=BooleanField())
         ).order_by("dataowner__dataownername")
 
     filter_string = ", ".join(filter_list)
     dsa_search_form = DsaSearchForm()
 
-    return render(request, 'Prism/dsas.html', {'dsas': dsas
-                                                   ,'dsa_form': dsa_search_form
-                                                   ,'searchterms': filter_string})
+    context = {'dsas': dsas
+        ,'dsa_form': dsa_search_form
+        ,'searchterms': filter_string
+        }
+    
+    return render(request, 'Prism/dsas.html', context)
 
 @login_required
 @permission_required(["Prism.view_tbldsas", "Prism.add_tbldsas", "Prism.change_tbldsas"
