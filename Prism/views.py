@@ -743,7 +743,7 @@ def dsdpcohort_remove(request, projectnumber, dsdpcohortid):
 
 def projectuserdocs(request, projectnumber):
     twelve_months_ago = timezone.now() - timedelta(days=365)
-    sixty_months_ago = timezone.now() - timedelta(days=365*5)
+    three_years_ago = timezone.now() - timedelta(days=365*3)
     
     project_user_docs = Tbluser.objects.filter(
         validto__isnull=True
@@ -765,9 +765,9 @@ def projectuserdocs(request, projectnumber):
                 , then=Value('Expired'))
                 ,default=Value('Outstanding'), output_field=CharField())
         , safe_status=Case(
-            When(safe__gt=sixty_months_ago
+            When(safe__gt=three_years_ago
                 , then=Value('Received'))
-            , When(safe__lt=sixty_months_ago,then=Value('Expired')), output_field=CharField())
+            , When(safe__lt=three_years_ago,then=Value('Expired')), output_field=CharField())
     ).order_by("firstname", "lastname")
 
     context = {'projectnumber': projectnumber
