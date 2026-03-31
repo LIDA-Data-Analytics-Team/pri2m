@@ -1,0 +1,36 @@
+{% extends "Prism/layout.html" %}
+
+{% block title %}
+Pri2m : {{ projectnumber }} User Docs
+{% endblock %}
+
+{% block content %}
+
+<h1><a href="{% url 'project' projectnumber %}">{{ projectnumber }}</a> - User Documents</h1>
+
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Status</th>
+            <th scope="col">Name</th>
+            <th scope="col">LASER User Agreement</th>
+            <th scope="col">Data Protection</th>
+            <th scope="col">Information Security</th>
+            <th scope="col">SAFE Researcher</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for user in project_user_docs %}
+            <tr>
+                <td>{{ user.status.statusdescription|default_if_none:"" }}</td>
+                <td><a href="{% url 'user' user.usernumber %}">{{ user.firstname|default_if_none:"" }} {{ user.lastname|default_if_none:"" }}</a></td>
+                <td>{{ user.laseragreement_status }}</td>
+                <td>{{ user.dataprotection_status }}</td>
+                <td>{{ user.informationsecurity_status }}</td>
+                <td>{{ user.safe_status|default_if_none:"" }}</td>
+            </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}

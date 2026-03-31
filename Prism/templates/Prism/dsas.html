@@ -56,7 +56,7 @@ Pri2m: All DSAs
             {% else %}
                 <tr>
             {% endif %}
-                    <td><a href='dsa/{{ dsa.documentid }}'>Details</a></td>
+                    <td><a href="{% url 'dsa' dsa.documentid %}">Details</a></td>
                     <td>{{ dsa.dataowner__dataownername|default_if_none:"" }}</td>
                     <td>{{ dsa.dsaname|default_if_none:"" }}</td>
                     <td>{{ dsa.startdate|default_if_none:""| date:"Y-m-d" }}</td>

@@ -148,6 +148,7 @@ class Tblprojectplatforminfo(models.Model):
         managed = False
         db_table = 'tblProjectPlatformInfo'
 
+
 class Tbldsdpcohort(models.Model):
     dsdpcohortid = models.AutoField(db_column='DSDPCohortID', primary_key=True)  # Field name made lowercase.
     cohort = models.CharField(db_column='Cohort', max_length=25, blank=True, null=True)  # Field name made lowercase.

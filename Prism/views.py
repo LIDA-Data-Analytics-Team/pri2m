@@ -2,8 +2,9 @@ from django.shortcuts import render
 from django.http import HttpResponseRedirect, HttpResponseBadRequest
 from django.apps import apps
 from django.db import transaction
-from django.db.models import Max, Count, OuterRef, Subquery, Q, Case, When, BooleanField
+from django.db.models import Max, Count, OuterRef, Subquery, Q, Case, When, BooleanField, Value, CharField
 from django.utils import timezone
+from datetime import timedelta
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required, permission_required 
@@ -739,6 +740,40 @@ def dsdpcohort_remove(request, projectnumber, dsdpcohortid):
     project_cohort = Tbldsdpcohort.objects.get(dsdpcohortid=dsdpcohortid)
     project_cohort.delete()
     return HttpResponseRedirect(f"/project/{projectnumber}")
+
+def projectuserdocs(request, projectnumber):
+    twelve_months_ago = timezone.now() - timedelta(days=365)
+    sixty_months_ago = timezone.now() - timedelta(days=365*5)
+    
+    project_user_docs = Tbluser.objects.filter(
+        validto__isnull=True
+        , usernumber__in=Tbluserproject.objects.filter(validto__isnull=True, projectnumber=projectnumber).values_list("usernumber")
+    ).annotate(laseragreement_status=Case(
+                    When(laseragreement__lt=timezone.now()
+                        , then=Value('Received'))
+                        , default=Value('Outstanding'), output_field=CharField())
+        , dataprotection_status=Case(
+            When(dataprotection__gt=twelve_months_ago
+                , then=Value('Received'))
+            , When(dataprotection__lt=twelve_months_ago
+                ,then=Value('Expired'))
+                ,default=Value('Outstanding'), output_field=CharField())
+        , informationsecurity_status=Case(
+            When(informationsecurity__gt=twelve_months_ago
+                , then=Value('Received'))
+            , When(informationsecurity__lt=twelve_months_ago
+                , then=Value('Expired'))
+                ,default=Value('Outstanding'), output_field=CharField())
+        , safe_status=Case(
+            When(safe__gt=sixty_months_ago
+                , then=Value('Received'))
+            , When(safe__lt=sixty_months_ago,then=Value('Expired')), output_field=CharField())
+    ).order_by("firstname", "lastname")
+
+    context = {'projectnumber': projectnumber
+        , 'project_user_docs': project_user_docs}
+
+    return render(request, 'Prism/userdocs.html', context)
 
 @login_required
 @permission_required(["Prism.view_tbluser"], raise_exception=True)

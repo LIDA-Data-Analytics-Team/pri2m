@@ -133,17 +133,16 @@ Pri2m : {{ project.projectnumber }}
                                     
                                     {% for doc, detail in p_docs.items %}
                                         {% if detail.status == "accepted" %}
-                                            <button type="button" class="btn btn-success" onclick=location.href="/project/{{ project.projectnumber }}/docs/{{ detail.url }}">{{ doc }}</button>
+                                            <a type="button" class="btn btn-success" href="{% url 'projectdocs' project.projectnumber detail.url %}">{{ doc }}</a>
                                         {% elif detail.status == "present" %}
-                                            <button type="button" class="btn btn-warning" onclick=location.href="/project/{{ project.projectnumber }}/docs/{{ detail.url }}">{{ doc }}</button>
+                                            <a type="button" class="btn btn-warning" href="{% url 'projectdocs' project.projectnumber detail.url %}">{{ doc }}</a>
                                         {% else %}
-                                            <button type="button" class="btn btn-danger" onclick=location.href="/project/{{ project.projectnumber }}/docs/{{ detail.url }}">{{ doc }}</button>
+                                            <a type="button" class="btn btn-danger" href="{% url 'projectdocs' project.projectnumber detail.url %}">{{ doc }}</a>
                                         {% endif %}
                                     {% endfor %}
-                                    <button type="button" class="btn btn-secondary" onclick=location.href="/project/{{ project.projectnumber }}/docs">Project Docs (all)</button>
-                                    <button type="button" class="btn btn-secondary">User Docs</button>
-                                    <button type="button" class="btn btn-secondary" onclick=location.href="/dsas?project={{ project.projectnumber }}">Data Sharing Agreements</button>
-
+                                    <a type="button" class="btn btn-secondary" href="{% url 'projectdocs' project.projectnumber %}">Project Docs (all)</a>
+                                    <a type="button" class="btn btn-secondary" href="{% url 'projectuserdocs' project.projectnumber %}">User Docs</a>
+                                    <a type="button" class="btn btn-secondary" href="{% url 'dsas' %}?project={{project.projectnumber}}">Data Sharing Agreements</a>
                                 </div>
                             </div>
 
