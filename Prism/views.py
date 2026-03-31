@@ -26,7 +26,7 @@ def index(request):
     return render(request, 'Prism/index.html')
 
 @login_required
-@permission_required(["Prism.view_tbluser", "Prism.view_tblproject"], raise_exception=True)
+@permission_required(["Prism.view_tbluser", "Prism.view_tblproject", "Prism.view_tbldsdpcohort"], raise_exception=True)
 def projects(request):
     query = request.GET
 
@@ -121,7 +121,8 @@ def projects(request):
                       , "Prism.view_tblkristal", "Prism.view_tblprojectkristal", "Prism.add_tblprojectkristal", "Prism.change_tblprojectkristal"
                       , "Prism.view_tblprojectdatallocation", "Prism.add_tblprojectdatallocation", "Prism.change_tblprojectdatallocation"
                       , "Prism.view_tblprojectplatforminfo", "Prism.add_tblprojectplatforminfo", "Prism.change_tblprojectplatforminfo"
-                      , "Prism.view_tblprojectnotes", "Prism.add_tblprojectnotes", "Prism.change_tblprojectnotes"], raise_exception=True)
+                      , "Prism.view_tblprojectnotes", "Prism.add_tblprojectnotes", "Prism.change_tblprojectnotes"
+                      , "Prism.view_tbldsdpcohort", "Prism.add_tbldsdpcohort"], raise_exception=True)
 def project(request, projectnumber):
     # Build forms
     
@@ -736,11 +737,15 @@ def projectdatallocation_remove(request, projectnumber, projectdatallocationid):
     
     return HttpResponseRedirect(f"/project/{projectnumber}")
 
+@login_required
+@permission_required(["Prism.delete_tbldsdpcohort"], raise_exception=True)
 def dsdpcohort_remove(request, projectnumber, dsdpcohortid):
     project_cohort = Tbldsdpcohort.objects.get(dsdpcohortid=dsdpcohortid)
     project_cohort.delete()
     return HttpResponseRedirect(f"/project/{projectnumber}")
 
+@login_required
+@permission_required(["Prism.view_tbluser"], raise_exception=True)
 def projectuserdocs(request, projectnumber):
     twelve_months_ago = timezone.now() - timedelta(days=365)
     three_years_ago = timezone.now() - timedelta(days=365*3)
