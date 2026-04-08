@@ -29,34 +29,46 @@ Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
         <div class="col-md-12">
             <form action="" method = "POST">
                 {% csrf_token %}
-                <p><input class="btn btn-primary" type="submit" value="Create"></p>
+                <p><input class="btn btn-primary" type="submit" value="Submit"></p>
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-md-12">
-                            <legend>Grant Details</legend>
-                                <div class="container-fluid">
-                                    <div class="row">
-                                        <div class="col-md-auto">
-                                            <fieldset>
-                                                <p>{{ kristal_form.kristalref.as_field_group }}</p>
-                                                <p>{{ kristal_form.kristalname.as_field_group }}</p>
-                                                <p>{{ kristal_form.grantstageid_id.as_field_group }}</p>
-                                            </fieldset>
-                                        </div>
-                                        <div class="col-md-auto">
-                                            <fieldset>
-                                                <p>{{ kristal_form.pi.as_field_group }}</p>
-                                                <p>{{ kristal_form.faculty_id.as_field_group }}</p>
-                                                <p>{{ kristal_form.location_id.as_field_group }}</p>
-                                            </fieldset>
-                                            <fieldset>
-                                                {{ kristal_form.kristalid }}
-                                                {{ kristal_form.validfrom }}
-                                                {{ kristal_form.validto }}
-                                                {{ kristal_form.createdby }}
-                                            </fieldset>
-                                        </div>
+                        <div class="col-md-auto">
+                        <legend>Grant Details</legend>
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-md-auto">
+                                        <fieldset>
+                                            <p>{{ kristal_form.kristalref.as_field_group }}</p>
+                                            <p>{{ kristal_form.kristalname.as_field_group }}</p>
+                                            <p>{{ kristal_form.grantstageid_id.as_field_group }}</p>
+                                        </fieldset>
                                     </div>
+                                    <div class="col-md-auto">
+                                        <fieldset>
+                                            <p>{{ kristal_form.pi.as_field_group }}</p>
+                                            <p>{{ kristal_form.faculty_id.as_field_group }}</p>
+                                            <p>{{ kristal_form.location_id.as_field_group }}</p>
+                                        </fieldset>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-auto">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <legend>Routing</legend>
+                                    <fieldset>
+                                        <p>{{ kristal_form.laser.as_field_group }}</p>
+                                        <p>{{ kristal_form.dsdp.as_field_group }}</p>
+                                        <p>{{ kristal_form.ridm.as_field_group }}</p>
+                                        <p>{{ kristal_form.community.as_field_group }}</p>
+                                    </fieldset>
+                                    <fieldset>
+                                        {{ kristal_form.kristalid }}
+                                        {{ kristal_form.validfrom }}
+                                        {{ kristal_form.validto }}
+                                        {{ kristal_form.createdby }}
+                                    </fieldset>
                                 </div>
                             </div>
                         </div>

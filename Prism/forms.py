@@ -193,6 +193,10 @@ class KristalForm(forms.Form):
     validfrom = forms.DateTimeField(widget = forms.HiddenInput(), required=False)
     validto = forms.DateTimeField(widget = forms.HiddenInput(), required=False)
     createdby = forms.CharField(widget = forms.HiddenInput(), required=False, max_length=50)
+    laser = forms.BooleanField(label="LASER", required=False)
+    dsdp = forms.BooleanField(label="DSDP", required=False)
+    ridm = forms.BooleanField(label="RIDM", required=False)
+    community = forms.BooleanField(label="Community", required=False)
 
     class Meta:
         model=Tblkristal
@@ -343,6 +347,10 @@ class GrantSearchForm(forms.Form):
     grantstageid_id = forms.ModelChoiceField(label="Stage", queryset=tlkGrantStage.objects.filter(validto__isnull=True).order_by("stagenumber"), required=False )
     faculty_id = forms.ModelChoiceField(label="Faculty", queryset=Tlkfaculty.objects.filter(validto__isnull=True).order_by("facultydescription"), required=False )
     location_id = forms.ModelChoiceField(label="Location", queryset=Tlklocation.objects.filter(validto__isnull=True).order_by("locationdescription"), required=False )
+    laser= forms.BooleanField(label="LASER", required=False)
+    dsdp= forms.BooleanField(label="DSDP", required=False)
+    ridm= forms.BooleanField(label="RIDM", required=False)
+    community= forms.BooleanField(label="Community", required=False)
 
     class Meta:
         model = Tblkristal

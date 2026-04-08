@@ -226,6 +226,10 @@ class Tblkristal(models.Model):
     validfrom = models.DateTimeField(db_column='ValidFrom', blank=True, null=True)
     validto = models.DateTimeField(db_column='ValidTo', blank=True, null=True)
     createdby = models.CharField(db_column='CreatedBy', max_length=50, blank=True, null=True)
+    laser = models.BooleanField(db_column='LASER', blank=True, null=True)  # Field name made lowercase.
+    dsdp = models.BooleanField(db_column='DSDP', blank=True, null=True)  # Field name made lowercase.
+    ridm = models.BooleanField(db_column='RIDM', blank=True, null=True)  # Field name made lowercase.
+    community = models.BooleanField(db_column='Community', blank=True, null=True)  # Field name made lowercase.
 
     def __str__(self):
         return self.kristalnumber

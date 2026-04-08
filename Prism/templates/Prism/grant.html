@@ -40,31 +40,43 @@ Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
                 <p><input class="btn btn-primary" type="submit" value="Submit"></p>
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-md-12">
-                            <legend>Grant Details</legend>
-                                <div class="container-fluid">
-                                    <div class="row">
-                                        <div class="col-md-auto">
-                                            <fieldset>
-                                                <p>{{ grant_form.kristalref.as_field_group }}</p>
-                                                <p>{{ grant_form.kristalname.as_field_group }}</p>
-                                                <p>{{ grant_form.grantstageid_id.as_field_group }}</p>
-                                            </fieldset>
-                                        </div>
-                                        <div class="col-md-auto">
-                                            <fieldset>
-                                                <p>{{ grant_form.pi.as_field_group }}</p>
-                                                <p>{{ grant_form.faculty_id.as_field_group }}</p>
-                                                <p>{{ grant_form.location_id.as_field_group }}</p>
-                                            </fieldset>
-                                            <fieldset>
-                                                {{ grant_form.kristalid }}
-                                                {{ grant_form.validfrom }}
-                                                {{ grant_form.validto }}
-                                                {{ grant_form.createdby }}
-                                            </fieldset>
-                                        </div>
+                        <div class="col-md-auto">
+                        <legend>Grant Details</legend>
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <div class="col-md-auto">
+                                        <fieldset>
+                                            <p>{{ grant_form.kristalref.as_field_group }}</p>
+                                            <p>{{ grant_form.kristalname.as_field_group }}</p>
+                                            <p>{{ grant_form.grantstageid_id.as_field_group }}</p>
+                                        </fieldset>
                                     </div>
+                                    <div class="col-md-auto">
+                                        <fieldset>
+                                            <p>{{ grant_form.pi.as_field_group }}</p>
+                                            <p>{{ grant_form.faculty_id.as_field_group }}</p>
+                                            <p>{{ grant_form.location_id.as_field_group }}</p>
+                                        </fieldset>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-auto">
+                            <div class="container-fluid">
+                                <div class="row">
+                                    <legend>Routing</legend>
+                                    <fieldset>
+                                        <p>{{ grant_form.laser.as_field_group }}</p>
+                                        <p>{{ grant_form.dsdp.as_field_group }}</p>
+                                        <p>{{ grant_form.ridm.as_field_group }}</p>
+                                        <p>{{ grant_form.community.as_field_group }}</p>
+                                    </fieldset>
+                                    <fieldset>
+                                        {{ grant_form.kristalid }}
+                                        {{ grant_form.validfrom }}
+                                        {{ grant_form.validto }}
+                                        {{ grant_form.createdby }}
+                                    </fieldset>
                                 </div>
                             </div>
                         </div>

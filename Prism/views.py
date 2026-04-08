@@ -1099,6 +1099,18 @@ def grants(request):
                 if key == 'location_id':
                     advanced_filter_query['location__locationid__iexact'] = value
                     filter_list.append(f"Location is '{Tlklocation.objects.get(locationid=value)}'")
+                if key == 'laser':
+                    advanced_filter_query['laser__iexact'] = True
+                    filter_list.append(f"LASER = {True}")
+                if key == 'dsdp':
+                    advanced_filter_query['dsdp__iexact'] = True
+                    filter_list.append(f"DSDP = {True}")
+                if key == 'ridm':
+                    advanced_filter_query['ridm__iexact'] = True
+                    filter_list.append(f"RIDM = {True}")
+                if key == 'community':
+                    advanced_filter_query['community__iexact'] = True
+                    filter_list.append(f"Community = {True}")
                 
     grants = Tblkristal.objects.filter(
             Q(**filter_query, _connector=Q.OR)
@@ -1140,12 +1152,22 @@ def grant(request, kristalnumber):
         validto__isnull=True
         ,projectnumber=OuterRef("projectnumber")
     ).values("projectname")
+    project_laser = Tblproject.objects.filter(
+        validto__isnull=True
+        ,projectnumber=OuterRef("projectnumber")
+    ).values("laser")
+    project_dsdp = Tblproject.objects.filter(
+        validto__isnull=True
+        ,projectnumber=OuterRef("projectnumber")
+    ).values("internship")
 
     grant_project = Tblprojectkristal.objects.filter(
         validto__isnull=True
         , kristalnumber=kristalnumber
     ).values(
     ).annotate(projectname = Subquery(projectnames)
+               , laser = Subquery(project_laser)
+               , dsdp = Subquery(project_dsdp)
     ).order_by("projectnumber")
 
     ## GRANT NOTES ##
@@ -1175,6 +1197,10 @@ def grant(request, kristalnumber):
     grant_project_form.initial['kristalnumber'] = kristalnumber
     grant_notes_form = GrantNotesForm(prefix='grant_note')
     
+    ## DATA VALIDATION ##
+    # Populated on GET Request
+    custom_errors = []
+
     context={'grant': grant
             , 'grant_form': grant_form
             , 'grant_project': grant_project
@@ -1182,6 +1208,7 @@ def grant(request, kristalnumber):
             , 'notes':page_obj
             , 'notes_filter' : query
             , 'new_note': grant_notes_form
+            , 'custom_errors': custom_errors
              }
 
     if request.method == 'POST':
@@ -1203,6 +1230,10 @@ def grant(request, kristalnumber):
                     ,validfrom = timezone.now()
                     ,validto = None
                     ,createdby = request.user
+                    ,laser = grant_form.cleaned_data['laser']
+                    ,dsdp = grant_form.cleaned_data['dsdp']
+                    ,ridm = grant_form.cleaned_data['ridm']
+                    ,community = grant_form.cleaned_data['community']
                 )
                 
                 # Fetch existing user record
@@ -1261,6 +1292,35 @@ def grant(request, kristalnumber):
         return render(request, 'Prism/grant.html', context)
 
     if request.method == 'GET':
+
+        ## DATA VALIDATION ##
+        # For information purposes only. 
+        # Validation across/between forms or where errors not sufficient to prevent form submission.
+
+        # Do Grant LASER/DSDP status align with any projects on Grant?
+        if grant_project:
+            p_laser = []
+            p_dsdp = []
+            for project in grant_project:
+                if project['laser']: 
+                    p_laser.append(project['projectnumber'])
+                if project['dsdp']:
+                    p_dsdp.append(project['projectnumber'])
+
+            if grant['laser'] and not p_laser:
+                custom_errors.append("Grant has no LASER project(s) but is LASER == True")
+            if not grant['laser'] and p_laser:
+                custom_errors.append(f"Grant has LASER project(s) but is LASER == False {p_laser}")
+            if grant['dsdp'] and not p_dsdp:
+                custom_errors.append("Grant has no DSDP project(s) but is DSDP == True")
+            if not grant['dsdp'] and p_dsdp:
+                custom_errors.append(f"Grant has DSDP project(s) but is DSDP == False {p_dsdp}")
+        else:
+            if grant['laser']:
+                custom_errors.append("Grant has no LASER project(s) but is LASER == True")
+            if grant['dsdp']:
+                custom_errors.append("Grant has no DSDP project(s) but is DSDP == True")
+
         return render(request, 'Prism/grant.html', context)
 
 @login_required
@@ -1293,6 +1353,10 @@ def grantcreate(request):
                     ,validfrom = timezone.now()
                     ,validto = None
                     ,createdby = request.user
+                    ,laser = kristal_form.cleaned_data['laser']
+                    ,dsdp = kristal_form.cleaned_data['dsdp']
+                    ,ridm = kristal_form.cleaned_data['ridm']
+                    ,community = kristal_form.cleaned_data['community']
                 )
 
                 insert_new_kristal.save(force_insert=True)
@@ -1309,6 +1373,40 @@ def grantcreate(request):
     if request.method == 'GET':
         kristal_form = KristalForm()
         return render(request, 'Prism/grant_new.html', {'kristal_form':kristal_form})
+
+@login_required
+@permission_required(["Prism.view_tblkristal"], raise_exception=True)
+def grants_no_routing(request):
+
+    null_filter_query = {"laser__isnull": True
+                             , "dsdp__isnull": True
+                             , "ridm__isnull": True
+                             , "community__isnull": True}
+    false_filter_query = {"laser": False
+                             , "dsdp": False
+                             , "ridm": False
+                             , "community": False}
+
+    grants = Tblkristal.objects.filter(
+            Q(**null_filter_query, _connector=Q.AND)
+            | Q(**false_filter_query, _connector=Q.AND)
+            , validto__isnull=True
+        ).values(
+            "kristalid"
+            , "kristalnumber"
+            , "kristalref"
+            , "kristalname"
+            , "grantstageid__grantstagedescription"
+            , "location__locationdescription"
+            , "faculty__facultydescription"
+        ).order_by("validfrom", "kristalref")
+
+    filter_string = "No Routing"
+    grant_search_form = GrantSearchForm()
+
+    return render(request, 'Prism/grants.html', {'grants': grants
+                                                   ,'grant_form': grant_search_form
+                                                   ,'searchterms': filter_string})
 
 @login_required
 @permission_required(["Prism.view_tbldsas", "Prism.view_tbldsadataowners"], raise_exception=True)
