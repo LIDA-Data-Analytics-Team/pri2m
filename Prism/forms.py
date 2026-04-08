@@ -193,10 +193,10 @@ class KristalForm(forms.Form):
     validfrom = forms.DateTimeField(widget = forms.HiddenInput(), required=False)
     validto = forms.DateTimeField(widget = forms.HiddenInput(), required=False)
     createdby = forms.CharField(widget = forms.HiddenInput(), required=False, max_length=50)
-    laser = forms.BooleanField(label="LASER", required=False, initial=True)
-    dsdp = forms.BooleanField(label="DSDP", required=False, initial=True)
-    ridm = forms.BooleanField(label="RIDM", required=False, initial=True)
-    community = forms.BooleanField(label="Community", required=False, initial=True)
+    laser = forms.BooleanField(label="LASER", required=False)
+    dsdp = forms.BooleanField(label="DSDP", required=False)
+    ridm = forms.BooleanField(label="RIDM", required=False)
+    community = forms.BooleanField(label="Community", required=False)
 
     class Meta:
         model=Tblkristal
