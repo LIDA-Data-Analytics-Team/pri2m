@@ -1375,6 +1375,40 @@ def grantcreate(request):
         return render(request, 'Prism/grant_new.html', {'kristal_form':kristal_form})
 
 @login_required
+@permission_required(["Prism.view_tblkristal"], raise_exception=True)
+def grants_no_routing(request):
+
+    null_filter_query = {"laser__isnull": True
+                             , "dsdp__isnull": True
+                             , "ridm__isnull": True
+                             , "community__isnull": True}
+    false_filter_query = {"laser": False
+                             , "dsdp": False
+                             , "ridm": False
+                             , "community": False}
+
+    grants = Tblkristal.objects.filter(
+            Q(**null_filter_query, _connector=Q.AND)
+            | Q(**false_filter_query, _connector=Q.AND)
+            , validto__isnull=True
+        ).values(
+            "kristalid"
+            , "kristalnumber"
+            , "kristalref"
+            , "kristalname"
+            , "grantstageid__grantstagedescription"
+            , "location__locationdescription"
+            , "faculty__facultydescription"
+        ).order_by("validfrom", "kristalref")
+
+    filter_string = "No Routing"
+    grant_search_form = GrantSearchForm()
+
+    return render(request, 'Prism/grants.html', {'grants': grants
+                                                   ,'grant_form': grant_search_form
+                                                   ,'searchterms': filter_string})
+
+@login_required
 @permission_required(["Prism.view_tbldsas", "Prism.view_tbldsadataowners"], raise_exception=True)
 def dsas (request):
     query = request.GET
