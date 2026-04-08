@@ -1341,6 +1341,10 @@ def grantcreate(request):
                     ,validfrom = timezone.now()
                     ,validto = None
                     ,createdby = request.user
+                    ,laser = kristal_form.cleaned_data['laser']
+                    ,dsdp = kristal_form.cleaned_data['dsdp']
+                    ,ridm = kristal_form.cleaned_data['ridm']
+                    ,community = kristal_form.cleaned_data['community']
                 )
 
                 insert_new_kristal.save(force_insert=True)
