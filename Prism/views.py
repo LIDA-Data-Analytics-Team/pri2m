@@ -1099,6 +1099,18 @@ def grants(request):
                 if key == 'location_id':
                     advanced_filter_query['location__locationid__iexact'] = value
                     filter_list.append(f"Location is '{Tlklocation.objects.get(locationid=value)}'")
+                if key == 'laser':
+                    advanced_filter_query['laser__iexact'] = True
+                    filter_list.append(f"LASER = {True}")
+                if key == 'dsdp':
+                    advanced_filter_query['dsdp__iexact'] = True
+                    filter_list.append(f"DSDP = {True}")
+                if key == 'ridm':
+                    advanced_filter_query['ridm__iexact'] = True
+                    filter_list.append(f"RIDM = {True}")
+                if key == 'community':
+                    advanced_filter_query['community__iexact'] = True
+                    filter_list.append(f"Community = {True}")
                 
     grants = Tblkristal.objects.filter(
             Q(**filter_query, _connector=Q.OR)
