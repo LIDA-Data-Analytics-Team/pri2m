@@ -1203,6 +1203,10 @@ def grant(request, kristalnumber):
                     ,validfrom = timezone.now()
                     ,validto = None
                     ,createdby = request.user
+                    ,laser = grant_form.cleaned_data['laser']
+                    ,dsdp = grant_form.cleaned_data['dsdp']
+                    ,ridm = grant_form.cleaned_data['ridm']
+                    ,community = grant_form.cleaned_data['community']
                 )
                 
                 # Fetch existing user record
