@@ -1140,12 +1140,22 @@ def grant(request, kristalnumber):
         validto__isnull=True
         ,projectnumber=OuterRef("projectnumber")
     ).values("projectname")
+    project_laser = Tblproject.objects.filter(
+        validto__isnull=True
+        ,projectnumber=OuterRef("projectnumber")
+    ).values("laser")
+    project_dsdp = Tblproject.objects.filter(
+        validto__isnull=True
+        ,projectnumber=OuterRef("projectnumber")
+    ).values("internship")
 
     grant_project = Tblprojectkristal.objects.filter(
         validto__isnull=True
         , kristalnumber=kristalnumber
     ).values(
     ).annotate(projectname = Subquery(projectnames)
+               , laser = Subquery(project_laser)
+               , dsdp = Subquery(project_dsdp)
     ).order_by("projectnumber")
 
     ## GRANT NOTES ##
@@ -1175,6 +1185,10 @@ def grant(request, kristalnumber):
     grant_project_form.initial['kristalnumber'] = kristalnumber
     grant_notes_form = GrantNotesForm(prefix='grant_note')
     
+    ## DATA VALIDATION ##
+    # Populated on GET Request
+    custom_errors = []
+
     context={'grant': grant
             , 'grant_form': grant_form
             , 'grant_project': grant_project
@@ -1182,6 +1196,7 @@ def grant(request, kristalnumber):
             , 'notes':page_obj
             , 'notes_filter' : query
             , 'new_note': grant_notes_form
+            , 'custom_errors': custom_errors
              }
 
     if request.method == 'POST':
@@ -1265,6 +1280,35 @@ def grant(request, kristalnumber):
         return render(request, 'Prism/grant.html', context)
 
     if request.method == 'GET':
+
+        ## DATA VALIDATION ##
+        # For information purposes only. 
+        # Validation across/between forms or where errors not sufficient to prevent form submission.
+
+        # Do Grant LASER/DSDP status align with any projects on Grant?
+        if grant_project:
+            p_laser = []
+            p_dsdp = []
+            for project in grant_project:
+                if project['laser']: 
+                    p_laser.append(project['projectnumber'])
+                if project['dsdp']:
+                    p_dsdp.append(project['projectnumber'])
+
+            if grant['laser'] and not p_laser:
+                custom_errors.append("Grant has no LASER project(s) but is LASER == True")
+            if not grant['laser'] and p_laser:
+                custom_errors.append(f"Grant has LASER project(s) but is LASER == False {p_laser}")
+            if grant['dsdp'] and not p_dsdp:
+                custom_errors.append("Grant has no DSDP project(s) but is DSDP == True")
+            if not grant['dsdp'] and p_dsdp:
+                custom_errors.append(f"Grant has DSDP project(s) but is DSDP == False {p_dsdp}")
+        else:
+            if grant['laser']:
+                custom_errors.append("Grant has no LASER project(s) but is LASER == True")
+            if grant['dsdp']:
+                custom_errors.append("Grant has no DSDP project(s) but is DSDP == True")
+
         return render(request, 'Prism/grant.html', context)
 
 @login_required
