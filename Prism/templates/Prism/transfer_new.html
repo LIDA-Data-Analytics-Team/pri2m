@@ -117,17 +117,19 @@ Pri2m : Transfer - New
         </thead>
         <tbody>
             {% for form in formset %}
-                <tr class="form-row">
-                    <td style="display:none;">{{ form.DELETE }}</td>
-                    <td><button type="button" class="btn btn-outline-danger btn-sm remove-row" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Remove row">x</button></td>
-                    <td>{{ form.filename.errors }}{{ form.filename|default_if_none:"" }}</td>
-                    <td>{{ form.assetid.errors }}{{ form.assetid }}</td>
-                    <td>{{ form.new_asset.errors }}{{ form.new_asset }}</td>
-                    <td>{{ form.trefilepath.errors }}{{ form.trefilepath|default_if_none:"" }}</td>
-                    <td>{{ form.datarepofilepath.errors }}{{ form.datarepofilepath|default_if_none:"" }}</td>
-                    <td>{{ form.transferaccepted.errors }}{{ form.transferaccepted|default_if_none:"" }}</td>
-                    <td>{{ form.rejectionnotes.errors }}{{ form.rejectionnotes|default_if_none:"" }}</td>
-                </tr>
+                {% if not form.DELETE.value %}
+                    <tr class="form-row">
+                        <td style="display:none;">{{ form.DELETE }}</td>
+                        <td><button type="button" class="btn btn-outline-danger btn-sm remove-row" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Remove row">x</button></td>
+                        <td>{{ form.filename.errors }}{{ form.filename|default_if_none:"" }}</td>
+                        <td>{{ form.assetid.errors }}{{ form.assetid }}</td>
+                        <td>{{ form.new_asset.errors }}{{ form.new_asset }}</td>
+                        <td>{{ form.trefilepath.errors }}{{ form.trefilepath|default_if_none:"" }}</td>
+                        <td>{{ form.datarepofilepath.errors }}{{ form.datarepofilepath|default_if_none:"" }}</td>
+                        <td>{{ form.transferaccepted.errors }}{{ form.transferaccepted|default_if_none:"" }}</td>
+                        <td>{{ form.rejectionnotes.errors }}{{ form.rejectionnotes|default_if_none:"" }}</td>
+                    </tr>
+                {% endif %}
             {% endfor %}
         </tbody>
     </table>
