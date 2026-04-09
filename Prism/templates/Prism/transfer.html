@@ -20,7 +20,7 @@ Pri2m : Transfer Details
             <p>To: {{transfer_request.transferto|default_if_none:""}}</p>
             <p>Requester Note: {{transfer_request.requesternotes|default_if_none:""}}</p>
         </div>
-        <div class="col-md-6">
+        <div class="col-md-6" style="text-align: left; align-items: start;">
             <legend>Review</legend>
             <p>Reviewed By: {{transfer_request.reviewedby_firstname}} {{transfer_request.reviewedby_lastname}}</p>
             <p>DSA: <a href="/dsa/{{transfer_request.dsareviewed}}">{{transfer_request.dsa_reviewed|default_if_none:""}}</a></p>

@@ -66,7 +66,7 @@ Pri2m : Transfer - New
                 <p>{{ transfer_form.transferto.as_field_group }}</p>
                 <p>{{ transfer_form.requesternotes.as_field_group }}</p>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-6" style="text-align: left; align-items: start;">
                 <legend>Review</legend>
                 <p>{{ transfer_form.reviewedby.as_field_group }}</p>
                 <p>{{ transfer_form.dsareviewed.as_field_group }}</p>
@@ -79,6 +79,12 @@ Pri2m : Transfer - New
 
     <legend>Files</legend> 
 
+    <div class="btn-group">
+        <button type="button" class="btn btn-outline-secondary btn-sm" id="add-row" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Manually enter singular file names">Add File</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#listItemsModal" id="add-list" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Manually enter a list of file names">Add List</button>
+        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="pickDirectory()" id="pick" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="List all files in a directory">Add Directory</button>
+    </div>
+
     <pre id="out"></pre>
 
     {{ formset.management_form }}
@@ -86,10 +92,8 @@ Pri2m : Transfer - New
     <table class="table table-hover" id="formset-table">
         <thead>
             <tr>
-                <th scope="col"><button type="button" class="btn btn-outline-secondary btn-sm" id="add-row" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Manually enter singular file names">Add File</button></th>
-                <th scope="col">File Name<br>
-                    <button type="button" class="btn btn-outline-secondary btn-sm" onclick="pickDirectoryAndSend()" id="pick" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="List all files in a directory">Add directory</button>
-                </th>
+                <th scope="col"></th>
+                <th scope="col">File Name</th>
                 <th scope="col">Existing Asset<br>
                     <button type="button" class="btn btn-outline-secondary btn-sm copy-column" data-field="assetid" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Copy top value to all rows in column">↓</button>
                 </th>
@@ -113,17 +117,19 @@ Pri2m : Transfer - New
         </thead>
         <tbody>
             {% for form in formset %}
-                <tr class="form-row">
-                    <td style="display:none;">{{ form.DELETE }}</td>
-                    <td><button type="button" class="btn btn-outline-danger btn-sm remove-row" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Remove row">x</button></td>
-                    <td>{{ form.filename.errors }}{{ form.filename|default_if_none:"" }}</td>
-                    <td>{{ form.assetid.errors }}{{ form.assetid }}</td>
-                    <td>{{ form.new_asset.errors }}{{ form.new_asset }}</td>
-                    <td>{{ form.trefilepath.errors }}{{ form.trefilepath|default_if_none:"" }}</td>
-                    <td>{{ form.datarepofilepath.errors }}{{ form.datarepofilepath|default_if_none:"" }}</td>
-                    <td>{{ form.transferaccepted.errors }}{{ form.transferaccepted|default_if_none:"" }}</td>
-                    <td>{{ form.rejectionnotes.errors }}{{ form.rejectionnotes|default_if_none:"" }}</td>
-                </tr>
+                {% if not form.DELETE.value %}
+                    <tr class="form-row">
+                        <td style="display:none;">{{ form.DELETE }}</td>
+                        <td><button type="button" class="btn btn-outline-danger btn-sm remove-row" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Remove row">x</button></td>
+                        <td>{{ form.filename.errors }}{{ form.filename|default_if_none:"" }}</td>
+                        <td>{{ form.assetid.errors }}{{ form.assetid }}</td>
+                        <td>{{ form.new_asset.errors }}{{ form.new_asset }}</td>
+                        <td>{{ form.trefilepath.errors }}{{ form.trefilepath|default_if_none:"" }}</td>
+                        <td>{{ form.datarepofilepath.errors }}{{ form.datarepofilepath|default_if_none:"" }}</td>
+                        <td>{{ form.transferaccepted.errors }}{{ form.transferaccepted|default_if_none:"" }}</td>
+                        <td>{{ form.rejectionnotes.errors }}{{ form.rejectionnotes|default_if_none:"" }}</td>
+                    </tr>
+                {% endif %}
             {% endfor %}
         </tbody>
     </table>
@@ -149,9 +155,33 @@ Pri2m : Transfer - New
             </tr>
         </tbody>
     </table>
-
-
 </form>
+
+<div class="modal fade" id="listItemsModal" data-bs-backdrop="static" data-bs-keyboard="false" tabindex="-1" aria-labelledby="listItemsModalLabel" aria-hidden="true">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="listItemsModalLabel">List filenames, one per line.</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">
+        <form>
+          <div class="mb-3">
+            <label for="listItemsModal-text" class="col-form-label">File names:</label>
+            <textarea class="form-control" id="listItemsModal-text"></textarea>
+          </div>
+        </form>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" id="cancelButton" data-bs-dismiss="modal">Close</button>
+        <a type="button" id="submitButton" class="btn btn-primary" onclick="getList()">
+            <span class="default-text">Submit</span>
+            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
 
 <script>
     async function* walkDirectory(dirHandle, path="") {
@@ -165,7 +195,23 @@ Pri2m : Transfer - New
         }
     }
 
-    async function pickDirectoryAndSend() {
+    function getList() {
+        const form = document.getElementById("transfer");
+        const formData = new FormData(form);
+        const textarea = document.getElementById("listItemsModal-text");
+        const paths = textarea.value
+            .split("\n")
+            .map(line => line.trim())
+            .filter(line => line.length > 0);
+
+        document.getElementById("out").textContent = paths.join("\n");
+
+        formData.append("files", JSON.stringify({paths}));
+
+        sendFileNames(formData)
+    }
+
+    async function pickDirectory() {
         const form = document.getElementById("transfer");
         const formData = new FormData(form);
 
@@ -184,6 +230,10 @@ Pri2m : Transfer - New
 
         formData.append("files", JSON.stringify({paths}));
 
+        sendFileNames(formData)
+    }
+    
+    async function sendFileNames(formData) {
         // Send ONLY names/paths to Django as JSON
         const csrftoken = document.querySelector('meta[name="csrf-token"]').content;
 
@@ -204,7 +254,7 @@ Pri2m : Transfer - New
             document.open(); document.write(html); document.close();
         }
     }
-    
+
     function setControlValue(el, value) {
         if ('value' in el) {
         el.value = value;
@@ -271,6 +321,14 @@ Pri2m : Transfer - New
 
     });
 
+    document.getElementById("submitButton").addEventListener("click", function () {
+        this.classList.add("disabled");
+        this.style.pointerEvents = "none";
+        document.getElementById("cancelButton").classList.add("disabled");
+
+        this.querySelector(".default-text").classList.add("d-none");
+        this.querySelector(".spinner-border").classList.remove("d-none");
+    });
 </script>
 
 {% endblock %}
