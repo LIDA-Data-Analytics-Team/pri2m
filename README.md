@@ -34,3 +34,7 @@ Well, everything really! But first thoughts:
 - ~~Authentication~~  
 
 Functionality will need to at least equal current Prism software before we can think about deploying and using it.
+
+
+- ~~create user from create project~~  
+- ~~pi & la added as project members~~ 
