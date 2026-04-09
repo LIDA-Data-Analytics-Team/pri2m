@@ -37,7 +37,7 @@ Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
                             <fieldset>
                                 <p>
                                     {{ dsa_form.dataowner_id.as_field_group }} <br>
-                                    <small><a href='/dataownercreate'>new data owner</a></small>
+                                    <small><a href="{% url 'dataownercreate' %}">new data owner</a></small>
                                 </p>
                                 <p>{{ dsa_form.agreementowneremail.as_field_group }}</p>
                             </fieldset>
