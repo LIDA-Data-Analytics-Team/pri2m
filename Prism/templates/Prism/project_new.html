@@ -56,6 +56,7 @@ Pri2m : New Project
                                         
                                         <fieldset>
                                             <legend>Ownership</legend>
+                                            <a href="{% url 'usercreate' %}">new user</a>
                                             <p>{{ form.pi.as_field_group }}</p>
                                             <p>{{ form.leadapplicant.as_field_group }}</p>
                                             <p>{{ form.faculty_id.as_field_group }}</p>

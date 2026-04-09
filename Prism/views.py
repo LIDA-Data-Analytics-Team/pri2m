@@ -314,18 +314,40 @@ def project(request, projectnumber):
                 ).values(
                 ).get() 
 
-                # Only save record if fields have changed
-                if recordchanged(existing_record=existing_project, form_set=insert):
-                    insert.save(force_insert=True)
+                with transaction.atomic():
+                    # Only save record if fields have changed
+                    if recordchanged(existing_record=existing_project, form_set=insert):
+                        insert.save(force_insert=True)
 
-                    delete = Tblproject(
-                        pid = pID
-                        ,validto = timezone.now()
-                    )
-                    delete.save(update_fields=["validto"])
-                
-                    messages.success(request, 'Project updated successfully.')
-                return HttpResponseRedirect(f"/project/{projectnumber}")
+                        delete = Tblproject(
+                            pid = pID
+                            ,validto = timezone.now()
+                        )
+                        delete.save(update_fields=["validto"])
+                    
+                        messages.success(request, 'Project updated successfully.')
+
+                    # Add PI and/or Lead Applicant to project membership if not already present
+                    if not project_membership.filter(usernumber=insert.pi).exists():
+                        insert_user_project = Tbluserproject(
+                            usernumber = insert.pi
+                            ,projectnumber = projectnumber
+                            ,validfrom = timezone.now()
+                            ,validto = None
+                            ,createdby = request.user
+                        )
+                        insert_user_project.save(force_insert=True)
+                    if not project_membership.filter(usernumber=insert.leadapplicant).exists():
+                        insert_user_project = Tbluserproject(
+                            usernumber = insert.leadapplicant
+                            ,projectnumber = projectnumber
+                            ,validfrom = timezone.now()
+                            ,validto = None
+                            ,createdby = request.user
+                        )
+                        insert_user_project.save(force_insert=True)
+
+                    return HttpResponseRedirect(f"/project/{projectnumber}")
             else:
                 context['form']=project_form
 
@@ -547,34 +569,55 @@ def projectcreate(request):
             ).aggregate(Max("projectnumber"))
             new_projectnumber = 'P' + str('0000' + str(int(max_projectnumber['projectnumber__max'][-4:]) +1))[-4:]
             
-            insert = Tblproject(
-                projectnumber = new_projectnumber
-                ,projectname = form.cleaned_data['projectname']
-                ,portfolionumber = form.cleaned_data['portfolionumber']
-                ,stage = form.cleaned_data['stage_id']
-                ,classification = form.cleaned_data['classification_id']
-                ,datrag = form.cleaned_data['datrag']
-                ,projectedstartdate = form.cleaned_data['projectedstartdate']
-                ,projectedenddate = form.cleaned_data['projectedenddate']
-                ,startdate = form.cleaned_data['startdate']
-                ,enddate = form.cleaned_data['enddate']
-                ,pi = form.cleaned_data['pi'].usernumber
-                ,leadapplicant = form.cleaned_data['leadapplicant'].usernumber
-                ,faculty = form.cleaned_data['faculty_id']
-                ,lida = form.cleaned_data['lida']
-                ,internship = form.cleaned_data['internship']
-                ,dspt = form.cleaned_data['dspt']
-                ,iso27001 = form.cleaned_data['iso27001']
-                ,laser = form.cleaned_data['laser']
-                ,irc = form.cleaned_data['irc']
-                ,seed = form.cleaned_data['seed']
-                ,validfrom = timezone.now()
-                ,validto = None
-                ,createdby = request.user
-            )
-            insert.save(force_insert=True)
+            with transaction.atomic():
+                insert = Tblproject(
+                    projectnumber = new_projectnumber
+                    ,projectname = form.cleaned_data['projectname']
+                    ,portfolionumber = form.cleaned_data['portfolionumber']
+                    ,stage = form.cleaned_data['stage_id']
+                    ,classification = form.cleaned_data['classification_id']
+                    ,datrag = form.cleaned_data['datrag']
+                    ,projectedstartdate = form.cleaned_data['projectedstartdate']
+                    ,projectedenddate = form.cleaned_data['projectedenddate']
+                    ,startdate = form.cleaned_data['startdate']
+                    ,enddate = form.cleaned_data['enddate']
+                    ,pi = form.cleaned_data['pi'].usernumber
+                    ,leadapplicant = form.cleaned_data['leadapplicant'].usernumber
+                    ,faculty = form.cleaned_data['faculty_id']
+                    ,lida = form.cleaned_data['lida']
+                    ,internship = form.cleaned_data['internship']
+                    ,dspt = form.cleaned_data['dspt']
+                    ,iso27001 = form.cleaned_data['iso27001']
+                    ,laser = form.cleaned_data['laser']
+                    ,irc = form.cleaned_data['irc']
+                    ,seed = form.cleaned_data['seed']
+                    ,validfrom = timezone.now()
+                    ,validto = None
+                    ,createdby = request.user
+                )
+                insert.save(force_insert=True)
 
-            return HttpResponseRedirect(f"/project/{new_projectnumber}")
+                # Add PI and/or Lead Applicant to project membership
+                insert_user_project = Tbluserproject(
+                    usernumber = insert.pi
+                    ,projectnumber = new_projectnumber
+                    ,validfrom = timezone.now()
+                    ,validto = None
+                    ,createdby = request.user
+                )
+                insert_user_project.save(force_insert=True)
+
+                if insert.pi != insert.leadapplicant:
+                    insert_user_project = Tbluserproject(
+                        usernumber = insert.leadapplicant
+                        ,projectnumber = new_projectnumber
+                        ,validfrom = timezone.now()
+                        ,validto = None
+                        ,createdby = request.user
+                    )
+                    insert_user_project.save(force_insert=True)
+
+                return HttpResponseRedirect(f"/project/{new_projectnumber}")
         else:
             return render(request, 'Prism/project_new.html', {'form':form})   
 
