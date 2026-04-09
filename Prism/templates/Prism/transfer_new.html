@@ -82,12 +82,6 @@ Pri2m : Transfer - New
 
     <legend>Files</legend> 
 
-    <div class="btn-group">
-        <button type="button" class="btn btn-outline-secondary btn-sm" id="add-row" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Manually enter singular file names">Add File</button>
-        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#listItemsModal" id="add-list" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Manually enter a list of file names">Add List</button>
-        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="pickDirectory()" id="pick" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="List all files in a directory">Add Directory</button>
-    </div>
-
     <pre id="out"></pre>
 
     {{ formset.management_form }}
@@ -96,7 +90,13 @@ Pri2m : Transfer - New
         <thead>
             <tr>
                 <th scope="col"></th>
-                <th scope="col">File Name</th>
+                <th scope="col">File Name<br>
+                    <div class="btn-group">
+                        <button type="button" class="btn btn-outline-secondary btn-sm" id="add-row" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Manually enter singular file names">Add File</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" data-bs-toggle="modal" data-bs-target="#listItemsModal" id="add-list" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Manually enter a list of file names">Add List</button>
+                        <button type="button" class="btn btn-outline-secondary btn-sm" onclick="pickDirectory()" id="pick" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="List all files in a directory">Add Directory</button>
+                    </div>
+                </th>
                 <th scope="col">Existing Asset<br>
                     <button type="button" class="btn btn-outline-secondary btn-sm copy-column" data-field="assetid" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Copy top value to all rows in column">↓</button>
                 </th>
@@ -170,12 +170,8 @@ Pri2m : Transfer - New
         <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
       </div>
       <div class="modal-body">
-        <form>
-          <div class="mb-3">
             <label for="listItemsModal-text" class="col-form-label">File names:</label>
-            <textarea class="form-control" id="listItemsModal-text"></textarea>
-          </div>
-        </form>
+            <textarea class="form-control" id="listItemsModal-text" rows="8" placeholder="Item one&#10;Item two&#10;Item three"></textarea>
       </div>
       <div class="modal-footer">
         <button type="button" class="btn btn-secondary" id="cancelButton" data-bs-dismiss="modal">Close</button>
