@@ -17,18 +17,21 @@ Pri2m : Transfer - New
 {% endif %}
 
 {% for form in formset %}
-    <div class="formset-row">
-        {{ form.non_field_errors }}
-    </div>
+    {% if not form.DELETE.value %}
+        <div class="formset-row">
+            {{ form.non_field_errors }}
+        </div>
+    {% endif %}
 {% endfor %}
-
 
 {% if formset.non_field_errors %}
 <ul>
     {% for form in formset %}
-        {% for error in form.non_field_errors %}
-            <li class="form-error">{{error}}</li>
-        {% endfor %}
+        {% if not form.DELETE.value %}
+            {% for error in form.non_field_errors %}
+                <li class="form-error">{{error}}</li>
+            {% endfor %}
+        {% endif %}
     {% endfor %}
 </ul>
 {% endif %}
@@ -117,8 +120,11 @@ Pri2m : Transfer - New
         </thead>
         <tbody>
             {% for form in formset %}
-                {% if not form.DELETE.value %}
+                {% if form.DELETE.value %}
+                    <tr class="form-row" style="display:none;">
+                {% else %}
                     <tr class="form-row">
+                {% endif %}
                         <td style="display:none;">{{ form.DELETE }}</td>
                         <td><button type="button" class="btn btn-outline-danger btn-sm remove-row" {% if projectnumber == "new" %}disabled="True"{% endif %} data-bs-toggle="tooltip" data-bs-placement="top" title="Remove row">x</button></td>
                         <td>{{ form.filename.errors }}{{ form.filename|default_if_none:"" }}</td>
@@ -129,7 +135,6 @@ Pri2m : Transfer - New
                         <td>{{ form.transferaccepted.errors }}{{ form.transferaccepted|default_if_none:"" }}</td>
                         <td>{{ form.rejectionnotes.errors }}{{ form.rejectionnotes|default_if_none:"" }}</td>
                     </tr>
-                {% endif %}
             {% endfor %}
         </tbody>
     </table>
