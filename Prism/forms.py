@@ -198,6 +198,15 @@ class KristalForm(forms.Form):
     ridm = forms.BooleanField(label="RIDM", required=False)
     community = forms.BooleanField(label="Community", required=False)
 
+    def clean(self):
+        cleaned_data = super().clean()
+        kristalref = cleaned_data.get("kristalref")
+
+        if Tblkristal.objects.filter(validto__isnull=True, kristalref=kristalref).exists():
+            self.add_error(None, "That KristalRef already exists in Prism")
+
+        return self.cleaned_data
+
     class Meta:
         model=Tblkristal
 
