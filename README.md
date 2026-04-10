@@ -38,3 +38,8 @@ Functionality will need to at least equal current Prism software before we can t
 
 - ~~create user from create project~~  
 - ~~pi & la added as project members~~ 
+
+- RIDM; update Grants from Portfolio+ export?
+    - https://medium.com/@suyashsingh.stem/how-to-import-excel-data-in-django-views-using-django-import-export-pandas-%EF%B8%8F-826c915bb670
+
+    
