@@ -22,6 +22,7 @@ urlpatterns = [
     ,path('grant/<int:kristalnumber>', views.grant, name = 'grant')
     ,path('grantcreate', views.grantcreate, name = 'grantcreate')
     ,path('grants_no_routing', views.grants_no_routing, name = 'grants_no_routing')
+    ,path('grants_update', views.grants_update, name = 'grants_update')
     ,path('dsas', views.dsas, name = 'dsas')
     ,path('dsa/<int:documentid>', views.dsa, name = 'dsa')
     ,path('dsacreate', views.dsacreate, name = 'dsacreate')

@@ -13,12 +13,13 @@ from .models import Tblproject, Tbluser, Tblprojectnotes, Tblprojectdocument, Tl
     , Tblprojectdatallocation, Tbluserproject, Tblkristal, Tblprojectkristal, Tlkstage, Tlkfaculty, Tlkclassification \
     , Tlkuserstatus, Tblusernotes, Tblprojectkristal, tlkGrantStage, Tlklocation, Tblkristalnotes, Tbldsas, Tbldsanotes \
     , Tbldsasprojects, Tbldsadataowners, Tlktransferrequesttypes, Tbltransferrequest, Tbltransferfile, Tbltransferfileasset \
-    , Tbldsdpcohort
+    , Tbldsdpcohort, tblPortfolioPlus
 from .forms import  ProjectSearchForm, ProjectForm, ProjectNotesForm, ProjectDocumentsForm, ProjectPlatformInfoForm \
     , ProjectDatAllocationForm, UserSearchForm, UserForm, UserProjectForm, UserNotesForm, KristalForm, ProjectKristalForm \
     , GrantSearchForm, GrantNotesForm, DsaForm, DsaNotesForm, ProjectDsaForm, DsaSearchForm, DataOwnerCreateForm, TransferSearchForm \
     , TransferForm, TransferfileForm, DSDPCohortForm
 import pandas as pd
+import numpy as np
 from collections import namedtuple
 import json
 
@@ -2038,3 +2039,132 @@ def transfercreate(request, projectnumber):
 
     if request.method == 'GET':
         return render(request, 'Prism/transfer_new.html', context)
+
+
+def grants_update(request):
+    context = None
+    if request.method == 'POST':
+        file = request.FILES['files']
+        path = file.file
+
+        pp_df = pd.read_excel(path, skiprows=2)
+        pp_df = pp_df.rename(columns=lambda x: x.strip())
+
+        lida_grants = Tblkristal.objects.filter(
+            validto__isnull=True
+            ).values('kristalref'
+            ).order_by('kristalref')
+        lida_grants_df = pd.DataFrame(lida_grants)
+        
+        pp_df = pd.merge(pp_df, lida_grants_df, left_on='Grant', right_on='kristalref', how='inner')
+
+        pp_df_leeds_price = pp_df.groupby(['Grant'], as_index=False
+                    ).agg(total_leeds_price=('Leeds Price (£)', 'sum'))
+
+        pp_df = pp_df.loc[pp_df["Role"] == "PI", ['Grant Status'
+                                ,'Phase Type'
+                                ,'Phase Status'
+                                ,'Grant'
+                                ,'Long Title'
+                                ,'Role'
+                                ,'Investigator'
+                                ,'Location'
+                                ,'Faculty'
+                                ,'Research Start'
+                                ,'Research End'
+                                ,'Outline Date'
+                                ,'Application Date'
+                                ,'Award Date']].drop_duplicates()
+
+        pp_df_new = pd.merge(pp_df, pp_df_leeds_price, left_on='Grant', right_on='Grant', how='inner')
+        
+        pp_existing = tblPortfolioPlus.objects.filter(validto__isnull = True).values()
+        pp_df_existing = pd.DataFrame(pp_existing)
+
+        with transaction.atomic():
+        # outer join dataframes, left_on = Prism right_on = Portfolio Plus
+            df_all = pd.merge(pp_df_existing, pp_df_new, left_on='grant', right_on='Grant', how='outer', indicator=True)
+            df_all = df_all.replace({np.nan: None})
+
+            # left_only = present in Prism not in Portfolio Plus = Nothing to do
+
+            # both = present in Prism and in Portfolio Plus  
+                # no difference = no action 
+                # difference = logically delete in Prism and insert new record 
+            df_update = df_all.loc[df_all['_merge'] == 'both']
+            if df_update.shape[0] > 0:
+                df_update = df_update.loc [(df_update['Grant Status'] != df_update['grantstatus'])
+                                            | (df_update['Phase Type'] != df_update['phasetype'])
+                                            | (df_update['Phase Status'] != df_update['phasestatus'])
+                                            | (df_update['Grant'] != df_update['grant'])
+                                            | (df_update['Long Title'] != df_update['longtitle'])
+                                            | (df_update['Investigator'] != df_update['pi'])
+                                            | (df_update['Location'] != df_update['location'])
+                                            | (df_update['Faculty'] != df_update['faculty'])
+                                            | (df_update['Research Start'] != df_update['researchstart'])
+                                            | (df_update['Research End'] != df_update['researchend'])
+                                            | (df_update['Outline Date'] != df_update['outlinedate'])
+                                            | (df_update['Application Date'] != df_update['applicationdate'])
+                                            | (df_update['Award Date'] != df_update['awarddate'])
+                                            | (df_update['total_leeds_price'] != df_update['leedsprice'])]
+
+                if df_update.shape[0] > 0:
+                    for index, row in df_update.iterrows():
+                        delete = tblPortfolioPlus.objects.filter(
+                            ppid=row['ppid']
+                        ).values()
+                        delete.update(validto = timezone.now())
+
+                        insert = tblPortfolioPlus(
+                            grantstatus = row['Grant Status']
+                            ,phasetype = row['Phase Type']
+                            ,phasestatus = row['Phase Status']
+                            ,grant = row['Grant']
+                            ,longtitle = row['Long Title']
+                            ,pi = row['Investigator']
+                            ,location = row['Location']
+                            ,faculty = row['Faculty']
+                            ,researchstart = row['Research Start']
+                            ,researchend = row['Research End']
+                            ,outlinedate = row['Outline Date']
+                            ,applicationdate = row['Application Date']
+                            ,awarddate = row['Award Date']
+                            ,leedsprice = row['total_leeds_price']
+                            ,validfrom = timezone.now()
+                            ,validto = None
+                            ,createdby = request.user
+                        )
+                        insert.save(force_insert=True)
+                    
+            # right_only = present in Portfolio Plus not in Prism = insert new record    
+            df_insert = df_all.loc[df_all['_merge'] == 'right_only']
+            if df_insert.shape[0] > 0:
+                for index, row in df_insert.iterrows():
+                        insert = tblPortfolioPlus(
+                            grantstatus = row['Grant Status']
+                            ,phasetype = row['Phase Type']
+                            ,phasestatus = row['Phase Status']
+                            ,grant = row['Grant']
+                            ,longtitle = row['Long Title']
+                            ,pi = row['Investigator']
+                            ,location = row['Location']
+                            ,faculty = row['Faculty']
+                            ,researchstart = row['Research Start']
+                            ,researchend = row['Research End']
+                            ,outlinedate = row['Outline Date']
+                            ,applicationdate = row['Application Date']
+                            ,awarddate = row['Award Date']
+                            ,leedsprice = row['total_leeds_price']
+                            ,validfrom = timezone.now()
+                            ,validto = None
+                            ,createdby = request.user
+                        )
+                        insert.save(force_insert=True)
+
+            updated_to_display = df_update.to_html()
+            inserted_to_display = df_insert.to_html()
+
+            context = {'updated': updated_to_display
+                    , 'inserted': inserted_to_display}
+
+    return render(request, 'Prism/grants_update.html', context)
