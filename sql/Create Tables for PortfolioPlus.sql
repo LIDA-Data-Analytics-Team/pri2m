@@ -6,7 +6,7 @@ create table tblPortfolioPlus (
 	, [PhaseType] varchar(25)
 	, [PhaseStatus] varchar(50)
 	, [Grant] int
-	, [LongTitle] varchar(255)
+	, [LongTitle] nvarchar(255)
 	, [PI] varchar(75)
 	, [Location] varchar(50)
 	, [Faculty] varchar(50)

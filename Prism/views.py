@@ -22,6 +22,7 @@ import pandas as pd
 import numpy as np
 from collections import namedtuple
 import json
+from decimal import Decimal, ROUND_HALF_UP
 
 def index(request):
     return render(request, 'Prism/index.html')
@@ -2092,6 +2093,7 @@ def grants_update(request):
                 # no difference = no action 
                 # difference = logically delete in Prism and insert new record 
             df_update = df_all.loc[df_all['_merge'] == 'both']
+
             if df_update.shape[0] > 0:
                 df_update = df_update.loc [(df_update['Grant Status'] != df_update['grantstatus'])
                                             | (df_update['Phase Type'] != df_update['phasetype'])
@@ -2101,12 +2103,14 @@ def grants_update(request):
                                             | (df_update['Investigator'] != df_update['pi'])
                                             | (df_update['Location'] != df_update['location'])
                                             | (df_update['Faculty'] != df_update['faculty'])
-                                            | (df_update['Research Start'] != df_update['researchstart'])
-                                            | (df_update['Research End'] != df_update['researchend'])
-                                            | (df_update['Outline Date'] != df_update['outlinedate'])
-                                            | (df_update['Application Date'] != df_update['applicationdate'])
-                                            | (df_update['Award Date'] != df_update['awarddate'])
-                                            | (df_update['total_leeds_price'] != df_update['leedsprice'])]
+                                            # Dates are fuckey. Pandas doesn't treat None == None with dates, need to explicitly also compare None values (and in our case invert the logic with a tilde)
+                                            | (pd.to_datetime(df_update['Research Start']) != pd.to_datetime(df_update['researchstart'])) & ~(df_update['Research Start'].isna() & df_update['researchstart'].isna())
+                                            | (pd.to_datetime(df_update['Research End']) != pd.to_datetime(df_update['researchend'])) & ~(df_update['Research End'].isna() & df_update['researchend'].isna())
+                                            | (pd.to_datetime(df_update['Outline Date']) != pd.to_datetime(df_update['outlinedate'])) & ~(df_update['Outline Date'].isna() & df_update['outlinedate'].isna())
+                                            | (pd.to_datetime(df_update['Application Date']) != pd.to_datetime(df_update['applicationdate'])) & ~(df_update['Application Date'].isna() & df_update['applicationdate'].isna())
+                                            | (pd.to_datetime(df_update['Award Date']) != pd.to_datetime(df_update['awarddate'])) & ~(df_update['Award Date'].isna() & df_update['awarddate'].isna())
+                                            # Need to convert excel sourced float to decimal for comparison
+                                            | (df_update["total_leeds_price"].apply(lambda x: Decimal(str(x)).quantize(Decimal("0.00"), rounding=ROUND_HALF_UP) if x is not None else None) != df_update['leedsprice'])]
 
                 if df_update.shape[0] > 0:
                     for index, row in df_update.iterrows():
@@ -2135,6 +2139,8 @@ def grants_update(request):
                             ,createdby = request.user
                         )
                         insert.save(force_insert=True)
+                    updated_to_display = df_update.to_html()
+                    context = {'updated': updated_to_display}
                     
             # right_only = present in Portfolio Plus not in Prism = insert new record    
             df_insert = df_all.loc[df_all['_merge'] == 'right_only']
@@ -2161,10 +2167,7 @@ def grants_update(request):
                         )
                         insert.save(force_insert=True)
 
-            updated_to_display = df_update.to_html()
-            inserted_to_display = df_insert.to_html()
-
-            context = {'updated': updated_to_display
-                    , 'inserted': inserted_to_display}
+                inserted_to_display = df_insert.to_html()
+                context = {'inserted': inserted_to_display}
 
     return render(request, 'Prism/grants_update.html', context)
