@@ -17,7 +17,7 @@ from .models import Tblproject, Tbluser, Tblprojectnotes, Tblprojectdocument, Tl
 from .forms import  ProjectSearchForm, ProjectForm, ProjectNotesForm, ProjectDocumentsForm, ProjectPlatformInfoForm \
     , ProjectDatAllocationForm, UserSearchForm, UserForm, UserProjectForm, UserNotesForm, KristalForm, ProjectKristalForm \
     , GrantSearchForm, GrantNotesForm, DsaForm, DsaNotesForm, ProjectDsaForm, DsaSearchForm, DataOwnerCreateForm, TransferSearchForm \
-    , TransferForm, TransferfileForm, DSDPCohortForm
+    , TransferForm, TransferfileForm, DSDPCohortForm, PortfolioPlusForm
 import pandas as pd
 import numpy as np
 from collections import namedtuple
@@ -1236,6 +1236,13 @@ def grant(request, kristalnumber):
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
 
+    ## PORTFOLIO PLUS ##
+    portfolio_plus = tblPortfolioPlus.objects.filter(
+        validto__isnull=True
+        , grant=grant['kristalref']
+    ).values(
+    ).get()         # get() with no arguments will raise an exception if the queryset doesn't contain exactly one item
+
     ## CREATE FORMS ##
     grant_form = KristalForm(initial=grant, prefix='grant')
     grant_project_form = ProjectKristalForm(prefix='grant_project')
@@ -1248,6 +1255,7 @@ def grant(request, kristalnumber):
 
     context={'grant': grant
             , 'grant_form': grant_form
+            , 'portfolio_plus': portfolio_plus
             , 'grant_project': grant_project
             , 'grant_project_form': grant_project_form
             , 'notes':page_obj
@@ -1289,17 +1297,16 @@ def grant(request, kristalnumber):
                 ).get() 
 
                 # Only save record if fields have changed
-                if recordchanged(existing_record=existing_grant, form_set=insert):
-                    insert.save(force_insert=True)
-
-                    delete = Tblkristal(
-                        kristalid = kristalid
-                        ,validto = timezone.now()
-                    )
-                    delete.save(update_fields=["validto"])
-                
-                    messages.success(request, 'Grant updated successfully.')
-                return HttpResponseRedirect(f"/grant/{kristalnumber}")
+                with transaction.atomic():
+                    if recordchanged(existing_record=existing_grant, form_set=insert):
+                        delete = Tblkristal(
+                            kristalid = kristalid
+                            ,validto = timezone.now()
+                        )
+                        delete.save(update_fields=["validto"])
+                        insert.save(force_insert=True)                   
+                        messages.success(request, 'Grant updated successfully.')
+                    return HttpResponseRedirect(f"/grant/{kristalnumber}")
             else:
                 context['grant_form']=grant_form
 

@@ -4,7 +4,7 @@ from .models import Tlkstage, Tblproject, Tlkclassification, Tlkfaculty, Tbluser
     , Tlkdocuments, Tblprojectplatforminfo, Tlkplatforminfo, Tblprojectdatallocation, Tlkuserstatus, Tbluserproject \
     , Tblusernotes, tlkGrantStage, Tlklocation, Tblkristal, Tblprojectkristal, Tblkristalnotes, Tbldsas, Tbldsadataowners \
     , Tbldsanotes, Tbldsasprojects, Tbltransferrequest, Tlktransferrequesttypes, Tlkfiletransfermethods, Tbltransferfileasset \
-    , Tbltransferfile, Tbldsdpcohort
+    , Tbltransferfile, Tbldsdpcohort, tblPortfolioPlus
 from django.utils import timezone
 
 class DateInput(forms.DateInput):
@@ -185,11 +185,11 @@ class KristalForm(forms.Form):
     kristalid = forms.IntegerField(widget = forms.HiddenInput(), required=False)
     kristalnumber = forms.IntegerField(widget = forms.HiddenInput(), required=False)
     kristalref = forms.DecimalField(label="Kristal Ref", widget=forms.NumberInput(attrs={"placeholder": "New Kristal Ref..."}), min_value=100000, max_value=999999)
-    kristalname = forms.CharField(label="Kristal Name", max_length=500, required=False)
-    grantstageid_id = forms.ModelChoiceField(label="Grant Stage", queryset=tlkGrantStage.objects.filter(validto__isnull=True).order_by("stagenumber"), required=False)
-    pi = forms.ModelChoiceField(label="PI", queryset=Tbluser.objects.filter(validto__isnull=True).order_by("firstname", "lastname"), to_field_name="usernumber", required=False)
-    location_id = forms.ModelChoiceField(label="Location", queryset=Tlklocation.objects.filter(validto__isnull=True).order_by("locationdescription"), required=False)
-    faculty_id = forms.ModelChoiceField(label="Faculty", queryset=Tlkfaculty.objects.filter(validto__isnull=True).order_by("facultydescription"), required=False)
+    kristalname = forms.CharField(widget = forms.HiddenInput(), label="Kristal Name", max_length=500, required=False)
+    grantstageid_id = forms.ModelChoiceField(widget = forms.HiddenInput(), label="Grant Stage", queryset=tlkGrantStage.objects.filter(validto__isnull=True).order_by("stagenumber"), required=False)
+    pi = forms.ModelChoiceField(widget = forms.HiddenInput(), label="PI", queryset=Tbluser.objects.filter(validto__isnull=True).order_by("firstname", "lastname"), to_field_name="usernumber", required=False)
+    location_id = forms.ModelChoiceField(widget = forms.HiddenInput(), label="Location", queryset=Tlklocation.objects.filter(validto__isnull=True).order_by("locationdescription"), required=False)
+    faculty_id = forms.ModelChoiceField(widget = forms.HiddenInput(), label="Faculty", queryset=Tlkfaculty.objects.filter(validto__isnull=True).order_by("facultydescription"), required=False)
     validfrom = forms.DateTimeField(widget = forms.HiddenInput(), required=False)
     validto = forms.DateTimeField(widget = forms.HiddenInput(), required=False)
     createdby = forms.CharField(widget = forms.HiddenInput(), required=False, max_length=50)
@@ -201,8 +201,9 @@ class KristalForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
         kristalref = cleaned_data.get("kristalref")
+        kristalnumber = cleaned_data.get("kristalnumber")
 
-        if Tblkristal.objects.filter(validto__isnull=True, kristalref=kristalref).exists():
+        if Tblkristal.objects.filter(validto__isnull=True, kristalref=kristalref).exclude(kristalnumber=kristalnumber).exists():
             self.add_error(None, "That KristalRef already exists in Prism")
 
         return self.cleaned_data
@@ -561,3 +562,25 @@ class TransferfileassetForm(forms.Form):
 
     class Meta:
         model = Tbltransferfileasset
+
+class PortfolioPlusForm (forms.Form):
+    ppid = forms.IntegerField(widget = forms.HiddenInput(), required=False)
+    grantstatus = forms.CharField(label="Grant Status", max_length=12, required=False, disabled=True)
+    phasetype = forms.CharField(label="Phase Type", max_length=25, required=False, disabled=True) 
+    phasestatus = forms.CharField(label="Phase Status", max_length=50, required=False, disabled=True)
+    longtitle = forms.CharField(label="Long Title", max_length=255, required=False, disabled=True)
+    pi = forms.CharField(label="PI", max_length=75, required=False, disabled=True)
+    location = forms.CharField(label="Location", max_length=50, required=False, disabled=True)
+    faculty = forms.CharField(label="Faculty", max_length=50, required=False, disabled=True)
+    researchstart = forms.DateTimeField(label="Research Start", widget = DateInput(), required=False, disabled=True)
+    researchend = forms.DateTimeField(label="Research End", widget = DateInput(), required=False, disabled=True)
+    outlinedate = forms.DateTimeField(label="Outline Date", widget = DateInput(), required=False, disabled=True) 
+    applicationdate = forms.DateTimeField(label="Application Date", widget = DateInput(), required=False, disabled=True)
+    awarddate = forms.DateTimeField(label="Award Date", widget = DateInput(), required=False, disabled=True)
+    leedsprice = forms.DecimalField(label="Total Leeds Price", widget=forms.NumberInput(), required=False, disabled=True)
+    validfrom = forms.DateTimeField(widget = forms.HiddenInput(), required=False)
+    validto = forms.DateTimeField(widget = forms.HiddenInput(), required=False)
+    createdby = forms.CharField(widget = forms.HiddenInput(), required=False, max_length=50)
+
+    class Meta:
+        model = tblPortfolioPlus

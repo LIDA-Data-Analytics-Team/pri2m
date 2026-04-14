@@ -1,4 +1,5 @@
 {% extends "Prism/layout.html" %}
+{% load humanize %}
 
 {% block title %}
 Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
@@ -6,7 +7,7 @@ Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
 
 {% block content %}
 
-<h1>Grant - {{ grant.kristalref }} - {{ grant.kristalname|default_if_none:"" }}</h1>
+<h1>Grant {{ grant.kristalref }} - {{ portfolio_plus.longtitle|default_if_none:"" }}</h1>
 
 {% if custom_errors %}
 <ul>
@@ -41,26 +42,81 @@ Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
                 <div class="container-fluid">
                     <div class="row">
                         <div class="col-md-auto">
-                        <legend>Grant Details</legend>
+
+                            <legend>Grant Details</legend>
+                            <p><small>Last Updated {{portfolio_plus.validfrom | date:"Y-m-d"}}</small></p>
                             <div class="container-fluid">
                                 <div class="row">
                                     <div class="col-md-auto">
                                         <fieldset>
                                             <p>{{ grant_form.kristalref.as_field_group }}</p>
-                                            <p>{{ grant_form.kristalname.as_field_group }}</p>
-                                            <p>{{ grant_form.grantstageid_id.as_field_group }}</p>
                                         </fieldset>
+                                        <table class="table table-hover">
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Grant Status</strong></td>
+                                                    <td>{{ portfolio_plus.grantstatus|default_if_none:"" }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Phase Type</strong></td>
+                                                    <td>{{ portfolio_plus.phasetype|default_if_none:"" }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Phase Status</strong></td>
+                                                    <td>{{ portfolio_plus.phasestatus|default_if_none:"" }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
                                     <div class="col-md-auto">
-                                        <fieldset>
-                                            <p>{{ grant_form.pi.as_field_group }}</p>
-                                            <p>{{ grant_form.faculty_id.as_field_group }}</p>
-                                            <p>{{ grant_form.location_id.as_field_group }}</p>
-                                        </fieldset>
+                                        <table class="table table-hover">
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Total Leeds Price</strong></td>
+                                                    <td>£{{ portfolio_plus.leedsprice|default_if_none:"-"|intcomma }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>PI</strong></td>
+                                                    <td>{{ portfolio_plus.pi|default_if_none:"" }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Location</strong></td>
+                                                    <td>{{ portfolio_plus.location|default_if_none:"" }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Faculty</strong></td>
+                                                    <td>{{ portfolio_plus.faculty|default_if_none:"" }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                    <div class="col-md-auto">
+                                        <table class="table table-hover">
+                                            <tbody>
+                                                <tr>
+                                                    <td><strong>Research End</strong></td>
+                                                    <td>{{ portfolio_plus.researchend|default_if_none:"" }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Outline Date</strong></td>
+                                                    <td>{{ portfolio_plus.outlinedate|default_if_none:"" }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Application Date</strong></td>
+                                                    <td>{{ portfolio_plus.applicationdate|default_if_none:"" }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Award Date</strong></td>
+                                                    <td>{{ portfolio_plus.awarddate|default_if_none:"" }}</td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
                                     </div>
                                 </div>
                             </div>
+                        
                         </div>
+
                         <div class="col-md-auto">
                             <div class="container-fluid">
                                 <div class="row">
@@ -73,6 +129,12 @@ Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
                                     </fieldset>
                                     <fieldset>
                                         {{ grant_form.kristalid }}
+                                        {{ grant_form.kristalnumber }}
+                                        {{ grant_form.kristalname }}
+                                        {{ grant_form.grantstageid_id }}
+                                        {{ grant_form.pi }}
+                                        {{ grant_form.location_id }}
+                                        {{ grant_form.faculty_id }}
                                         {{ grant_form.validfrom }}
                                         {{ grant_form.validto }}
                                         {{ grant_form.createdby }}
