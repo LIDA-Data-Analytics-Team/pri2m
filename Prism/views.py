@@ -2050,7 +2050,9 @@ def transfercreate(request, projectnumber):
 
 
 def grants_update(request):
-    context = None
+    context = {'updated': None
+                ,'inserted': None}
+    
     if request.method == 'POST':
         file = request.FILES['files']
         path = file.file
@@ -2074,6 +2076,7 @@ def grants_update(request):
                                 ,'Phase Status'
                                 ,'Grant'
                                 ,'Long Title'
+                                ,'External Ref.'
                                 ,'Role'
                                 ,'Investigator'
                                 ,'Location'
@@ -2107,6 +2110,7 @@ def grants_update(request):
                                             | (df_update['Phase Status'] != df_update['phasestatus'])
                                             | (df_update['Grant'] != df_update['grant'])
                                             | (df_update['Long Title'] != df_update['longtitle'])
+                                            | (df_update['External Ref.'] != df_update['externalref'])
                                             | (df_update['Investigator'] != df_update['pi'])
                                             | (df_update['Location'] != df_update['location'])
                                             | (df_update['Faculty'] != df_update['faculty'])
@@ -2132,6 +2136,7 @@ def grants_update(request):
                             ,phasestatus = row['Phase Status']
                             ,grant = row['Grant']
                             ,longtitle = row['Long Title']
+                            ,externalref = row['External Ref.']
                             ,pi = row['Investigator']
                             ,location = row['Location']
                             ,faculty = row['Faculty']
@@ -2147,7 +2152,7 @@ def grants_update(request):
                         )
                         insert.save(force_insert=True)
                     updated_to_display = df_update.to_html()
-                    context = {'updated': updated_to_display}
+                    context['updated'] = updated_to_display
                     
             # right_only = present in Portfolio Plus not in Prism = insert new record    
             df_insert = df_all.loc[df_all['_merge'] == 'right_only']
@@ -2159,6 +2164,7 @@ def grants_update(request):
                             ,phasestatus = row['Phase Status']
                             ,grant = row['Grant']
                             ,longtitle = row['Long Title']
+                            ,externalref = row['External Ref.']
                             ,pi = row['Investigator']
                             ,location = row['Location']
                             ,faculty = row['Faculty']
@@ -2175,6 +2181,6 @@ def grants_update(request):
                         insert.save(force_insert=True)
 
                 inserted_to_display = df_insert.to_html()
-                context = {'inserted': inserted_to_display}
+                context['inserted'] = inserted_to_display
 
     return render(request, 'Prism/grants_update.html', context)

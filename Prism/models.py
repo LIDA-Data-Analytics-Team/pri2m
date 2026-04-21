@@ -559,6 +559,7 @@ class tblPortfolioPlus (models.Model):
     phasestatus = models.CharField(db_column='PhaseStatus', max_length=50, blank=True, null=True)
     grant = models.DecimalField(db_column='Grant', max_digits=6, decimal_places=0, blank=True, null=True)
     longtitle = models.CharField(db_column='LongTitle', max_length=255, blank=True, null=True)
+    externalref = models.CharField(db_column='ExternalRef', max_length=50, blank=True, null=True)
     pi = models.CharField(db_column='PI', max_length=75, blank=True, null=True)
     location = models.CharField(db_column='Location', max_length=50, blank=True, null=True)
     faculty = models.CharField(db_column='Faculty', max_length=50, blank=True, null=True)
