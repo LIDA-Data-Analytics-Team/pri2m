@@ -2071,6 +2071,14 @@ def grants_update(request):
         pp_df_leeds_price = pp_df.groupby(['Grant'], as_index=False
                     ).agg(total_leeds_price=('Leeds Price (£)', 'sum'))
 
+        # Hacky sack to account for duplication in source data
+        pp_df = pp_df.replace({'Not Known': None
+                                ,'No ref given': None
+                                ,'No Ref': None
+                                ,'No ext ref': None
+                                ,'No Ext Ref Given': None
+                                ,'No External Reference': None
+                                ,'No ref stated': None})
         pp_df = pp_df.loc[pp_df["Role"] == "PI", ['Grant Status'
                                 ,'Phase Type'
                                 ,'Phase Status'
@@ -2086,9 +2094,10 @@ def grants_update(request):
                                 ,'Outline Date'
                                 ,'Application Date'
                                 ,'Award Date']].drop_duplicates()
+        pp_df=pp_df.groupby('Grant').first()
 
         pp_df_new = pd.merge(pp_df, pp_df_leeds_price, left_on='Grant', right_on='Grant', how='inner')
-        
+
         pp_existing = tblPortfolioPlus.objects.filter(validto__isnull = True).values()
         pp_df_existing = pd.DataFrame(pp_existing)
 
@@ -2105,16 +2114,17 @@ def grants_update(request):
             df_update = df_all.loc[df_all['_merge'] == 'both']
 
             if df_update.shape[0] > 0:
-                df_update = df_update.loc [(df_update['Grant Status'] != df_update['grantstatus'])
-                                            | (df_update['Phase Type'] != df_update['phasetype'])
-                                            | (df_update['Phase Status'] != df_update['phasestatus'])
-                                            | (df_update['Grant'] != df_update['grant'])
-                                            | (df_update['Long Title'] != df_update['longtitle'])
-                                            | (df_update['External Ref.'] != df_update['externalref'])
-                                            | (df_update['Investigator'] != df_update['pi'])
-                                            | (df_update['Location'] != df_update['location'])
-                                            | (df_update['Faculty'] != df_update['faculty'])
-                                            # Dates are fuckey. Pandas doesn't treat None == None with dates, need to explicitly also compare None values (and in our case invert the logic with a tilde)
+                                        # Pandas doesn't treat None == None with dates, need to explicitly also compare None values (and in our case invert the logic with a tilde)  
+                df_update = df_update.loc [(df_update['Grant Status'] != df_update['grantstatus']) & ~(df_update['Grant Status'].isna() & df_update['grantstatus'].isna())
+                                            | (df_update['Phase Type'] != df_update['phasetype']) & ~(df_update['Phase Type'].isna() & df_update['phasetype'].isna())
+                                            | (df_update['Phase Status'] != df_update['phasestatus']) & ~(df_update['Phase Status'].isna() & df_update['phasestatus'].isna())
+                                            | (df_update['Grant'] != df_update['grant']) & ~(df_update['Grant'].isna() & df_update['grant'].isna())
+                                            | (df_update['Long Title'] != df_update['longtitle']) & ~(df_update['Long Title'].isna() & df_update['longtitle'].isna())
+                                            | (df_update['External Ref.'] != df_update['externalref']) & ~(df_update['External Ref.'].isna() & df_update['externalref'].isna())
+                                            | (df_update['Investigator'] != df_update['pi']) & ~(df_update['Investigator'].isna() & df_update['pi'].isna())
+                                            | (df_update['Location'] != df_update['location']) & ~(df_update['Location'].isna() & df_update['location'].isna())
+                                            | (df_update['Faculty'] != df_update['faculty']) & ~(df_update['Faculty'].isna() & df_update['faculty'].isna())
+                                            # Dates are fuckey.  
                                             | (pd.to_datetime(df_update['Research Start']) != pd.to_datetime(df_update['researchstart'])) & ~(df_update['Research Start'].isna() & df_update['researchstart'].isna())
                                             | (pd.to_datetime(df_update['Research End']) != pd.to_datetime(df_update['researchend'])) & ~(df_update['Research End'].isna() & df_update['researchend'].isna())
                                             | (pd.to_datetime(df_update['Outline Date']) != pd.to_datetime(df_update['outlinedate'])) & ~(df_update['Outline Date'].isna() & df_update['outlinedate'].isna())
