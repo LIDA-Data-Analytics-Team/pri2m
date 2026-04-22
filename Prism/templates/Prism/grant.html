@@ -48,9 +48,6 @@ Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
                             <div class="container-fluid">
                                 <div class="row">
                                     <div class="col-md-auto">
-                                        <fieldset>
-                                            <p>{{ grant_form.kristalref.as_field_group }}</p>
-                                        </fieldset>
                                         <table class="table table-hover">
                                             <tbody>
                                                 <tr>
@@ -64,6 +61,10 @@ Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
                                                 <tr>
                                                     <td><strong>Phase Status</strong></td>
                                                     <td>{{ portfolio_plus.phasestatus|default_if_none:"" }}</td>
+                                                </tr>
+                                                <tr>
+                                                    <td><strong>Ext. Ref.</strong></td>
+                                                    <td>{{ portfolio_plus.externalref|default_if_none:"" }}</td>
                                                 </tr>
                                             </tbody>
                                         </table>
