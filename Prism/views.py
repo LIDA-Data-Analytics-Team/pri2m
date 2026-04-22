@@ -2071,14 +2071,21 @@ def grants_update(request):
         pp_df_leeds_price = pp_df.groupby(['Grant'], as_index=False
                     ).agg(total_leeds_price=('Leeds Price (£)', 'sum'))
 
-        # Hacky sack to account for duplication in source data
-        pp_df = pp_df.replace({'Not Known': None
-                                ,'No ref given': None
-                                ,'No Ref': None
-                                ,'No ext ref': None
-                                ,'No Ext Ref Given': None
-                                ,'No External Reference': None
-                                ,'No ref stated': None})
+        # # Hacky sack to account for duplication in source data
+        # pp_df = pp_df.replace({'Not Known': None
+        #                         ,'No ref given': None
+        #                         ,'No Ref': None
+        #                         ,'No ext ref': None
+        #                         ,'No Ext Ref Given': None
+        #                         ,'No External Reference': None
+        #                         ,'No ref stated': None})
+
+        # Using regex to pattern match 'No ref', replace with None, remove duplicates then prefer External Ref values over None
+        pp_df['External Ref.'] = pp_df['External Ref.'].replace(
+                                    r'(?i)^(not known|no\b.*\b(ref|reference)\b)',
+                                    None,
+                                    regex=True
+                                    )
         pp_df = pp_df.loc[pp_df["Role"] == "PI", ['Grant Status'
                                 ,'Phase Type'
                                 ,'Phase Status'
@@ -2114,7 +2121,7 @@ def grants_update(request):
             df_update = df_all.loc[df_all['_merge'] == 'both']
 
             if df_update.shape[0] > 0:
-                                        # Pandas doesn't treat None == None with dates, need to explicitly also compare None values (and in our case invert the logic with a tilde)  
+                                        # Pandas doesn't always treat None == None, need to explicitly also compare None values (and in our case invert the logic with a tilde)  
                 df_update = df_update.loc [(df_update['Grant Status'] != df_update['grantstatus']) & ~(df_update['Grant Status'].isna() & df_update['grantstatus'].isna())
                                             | (df_update['Phase Type'] != df_update['phasetype']) & ~(df_update['Phase Type'].isna() & df_update['phasetype'].isna())
                                             | (df_update['Phase Status'] != df_update['phasestatus']) & ~(df_update['Phase Status'].isna() & df_update['phasestatus'].isna())
@@ -2161,8 +2168,9 @@ def grants_update(request):
                             ,createdby = request.user
                         )
                         insert.save(force_insert=True)
-                    updated_to_display = df_update.to_html()
-                    context['updated'] = updated_to_display
+                    # updated_to_display = df_update.to_html()
+                    # context['updated'] = updated_to_display
+                    context['updated'] = len(df_update.index)
                     
             # right_only = present in Portfolio Plus not in Prism = insert new record    
             df_insert = df_all.loc[df_all['_merge'] == 'right_only']
@@ -2190,7 +2198,8 @@ def grants_update(request):
                         )
                         insert.save(force_insert=True)
 
-                inserted_to_display = df_insert.to_html()
-                context['inserted'] = inserted_to_display
+                # inserted_to_display = df_insert.to_html()
+                # context['inserted'] = inserted_to_display
+                context['inserted'] = len(df_insert.index)
 
     return render(request, 'Prism/grants_update.html', context)
