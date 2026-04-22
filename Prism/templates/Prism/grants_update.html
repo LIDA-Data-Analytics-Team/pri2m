@@ -19,24 +19,34 @@ Pri2m : Update Prism Grants
         </button> 
     </div>
 </form>
+
 <br>
 
 {% if updated >= 0 %}
-<legend>Results</legend>
-<table class="table table-hover">
-    <thead>
-        <tr>
-            <th scope="col">Updated</th>
-            <th scope="col">Created</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td>{{ updated }}</td>
-            <td>{{ inserted }}</td>
-        </tr>
-    </tbody>
-</table>
+    <legend>Results</legend>
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th scope="col">Updated</th>
+                <th scope="col">Created</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>{{ updated }}</td>
+                <td>{{ inserted }}</td>
+            </tr>
+        </tbody>
+    </table>
+{% else %}
+    <legend>Guidance</legend>
+    <ul>
+        <li><a href="https://app.powerbi.com/Redirect?action=OpenReport&appId=9bd94627-8624-4db5-bee5-561b076da492&reportObjectId=ff622eb9-763e-47c2-9793-a86cec5eabda&ctid=bdeaeda8-c81d-45ce-863e-5232a535b7cb&reportPage=ReportSectiondfc44aaee40956a6a644&pbi_source=appShareLink&portalSessionId=47cd317f-e135-464f-8833-4fd98875c8aa" target="_blank">Navigate to Portfolio Plus report</a>.</li>
+        <li>Ensure all filters are removed.</li>
+        <li>Export data as 'Summarized data' in '.xlsx' format and save.</li>
+        <li>Select saved Excel file above.</li>
+        <li>Submit.</li>
+    </ul>
 {% endif %}
 
 <script>
