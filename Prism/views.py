@@ -1197,6 +1197,10 @@ def grant(request, kristalnumber):
         validto__isnull=True
         ,projectnumber=OuterRef("projectnumber")
     ).values("projectname")
+    projectstages = Tblproject.objects.filter(
+        validto__isnull=True
+        ,projectnumber=OuterRef("projectnumber")
+    ).values("stage__pstagedescription")
     project_laser = Tblproject.objects.filter(
         validto__isnull=True
         ,projectnumber=OuterRef("projectnumber")
@@ -1211,6 +1215,7 @@ def grant(request, kristalnumber):
         , kristalnumber=kristalnumber
     ).values(
     ).annotate(projectname = Subquery(projectnames)
+               , stage = Subquery(projectstages)
                , laser = Subquery(project_laser)
                , dsdp = Subquery(project_dsdp)
     ).order_by("projectnumber")
