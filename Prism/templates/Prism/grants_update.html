@@ -8,25 +8,51 @@ Pri2m : Update Prism Grants
 
 <h1>Update Prism Grants</h1>
 
-<form action="" method="post" enctype="multipart/form-data">
+<form action="" method="post" enctype="multipart/form-data" id="uploadForm">
     {% csrf_token %}
-    <h4>Select & Upload File</h4> 
-    <input type="file" required name="files"> 
-    <button type="submit">Submit</button> 
+    <legend>Select & Upload File</legend> 
+    <div class="btn-group">
+        <input class="form-control" type="file" required name="files" id="fileInput"> 
+        <button class="btn btn-primary" type="submit" id="submitButton">
+            <span class="default-text">Submit</span>
+            <span class="spinner-border spinner-border-sm d-none" role="status"></span>
+        </button> 
+    </div>
 </form>
+<br>
 
-{% if updated %}
-    <div>
-        <h2>Updated Data</h2>
-        {{ updated | safe }} existing records updated.
-    </div>
+{% if updated >= 0 %}
+<legend>Results</legend>
+<table class="table table-hover">
+    <thead>
+        <tr>
+            <th scope="col">Updated</th>
+            <th scope="col">Created</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td>{{ updated }}</td>
+            <td>{{ inserted }}</td>
+        </tr>
+    </tbody>
+</table>
 {% endif %}
 
-{% if inserted %}
-    <div>
-        <h2>Inserted Data</h2>
-        {{ inserted | safe }} new records inserted.
-    </div>
-{% endif %}
+<script>
+
+    document.getElementById('uploadForm').addEventListener('submit', function () {
+        submitbutton = document.getElementById('submitButton');
+        submitbutton.disabled = true;
+        submitbutton.querySelector(".default-text").classList.add("d-none");
+        submitbutton.querySelector(".spinner-border").classList.remove("d-none");
+        
+        fileinput = document.getElementById('fileInput');
+        fileInput.style.pointerEvents = 'none';
+        fileInput.style.opacity = '0.6';
+
+    });
+
+</script>
 
 {% endblock %}

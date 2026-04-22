@@ -2054,6 +2054,9 @@ def grants_update(request):
                 ,'inserted': None}
     
     if request.method == 'POST':
+        context = {'updated': 0
+                ,'inserted': 0}
+
         file = request.FILES['files']
         path = file.file
 
@@ -2070,15 +2073,6 @@ def grants_update(request):
 
         pp_df_leeds_price = pp_df.groupby(['Grant'], as_index=False
                     ).agg(total_leeds_price=('Leeds Price (£)', 'sum'))
-
-        # # Hacky sack to account for duplication in source data
-        # pp_df = pp_df.replace({'Not Known': None
-        #                         ,'No ref given': None
-        #                         ,'No Ref': None
-        #                         ,'No ext ref': None
-        #                         ,'No Ext Ref Given': None
-        #                         ,'No External Reference': None
-        #                         ,'No ref stated': None})
 
         # Using regex to pattern match 'No ref', replace with None, remove duplicates then prefer External Ref values over None
         pp_df['External Ref.'] = pp_df['External Ref.'].replace(
