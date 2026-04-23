@@ -1122,49 +1122,10 @@ def projectkristal_remove(request, projectkristalid):
 @permission_required(["Prism.view_tblkristal"], raise_exception=True)
 def grants(request):
     query = request.GET
-
     filter_query = {}
     pp_advanced_filter_query = {}
     advanced_filter_query = {}
     filter_list = []
-
-    if query is not None and query != '':
-        for key in query:
-            value = query.get(key)
-            if value != '':
-                if key == 'q':
-                    filter_query['longtitle__icontains'] = value
-                    filter_query['kristalname__icontains'] = value
-                    filter_query['kristalref__icontains'] = value
-                    filter_list.append(f"Grant Name or Kristal Reference contains '{value}'")
-                if key == 'grantstatus':
-                    pp_advanced_filter_query['grantstatus__iexact'] = value
-                    filter_list.append(f"Grant Status is '{value}'")
-                if key == 'phasetype':
-                    pp_advanced_filter_query['phasetype__iexact'] = value
-                    filter_list.append(f"Phase Type is '{value}'")
-                if key == 'phasestatus':
-                    pp_advanced_filter_query['phasestatus__iexact'] = value
-                    filter_list.append(f"Phase Status is '{value}'")
-                if key == 'location':
-                    pp_advanced_filter_query['location__iexact'] = value
-                    filter_list.append(f"Location is '{value}'")
-                if key == 'faculty':
-                    pp_advanced_filter_query['faculty__iexact'] = value
-                    filter_list.append(f"Faculty is '{value}'")
-
-                if key == 'laser':
-                    advanced_filter_query['laser__iexact'] = True
-                    filter_list.append(f"LASER = {True}")
-                if key == 'dsdp':
-                    advanced_filter_query['dsdp__iexact'] = True
-                    filter_list.append(f"DSDP = {True}")
-                if key == 'ridm':
-                    advanced_filter_query['ridm__iexact'] = True
-                    filter_list.append(f"RIDM = {True}")
-                if key == 'community':
-                    advanced_filter_query['community__iexact'] = True
-                    filter_list.append(f"Community = {True}")
 
     pp_grantstatus = tblPortfolioPlus.objects.filter(
                         validto__isnull=True
@@ -1210,13 +1171,67 @@ def grants(request):
             , faculty = Subquery(pp_faculty)
         )
 
-    grants = grants.filter(
-        Q(**filter_query, _connector=Q.OR)
-        , Q(**advanced_filter_query, _connector=Q.AND)
-        , Q(**pp_advanced_filter_query, _connector=Q.AND)
-    )
+    if request.path == '/grants_no_routing':
+        null_filter_query = {"laser__isnull": True
+                                , "dsdp__isnull": True
+                                , "ridm__isnull": True
+                                , "community__isnull": True}
+        false_filter_query = {"laser": False
+                                , "dsdp": False
+                                , "ridm": False
+                                , "community": False}
+        grants = grants.filter(
+            Q(**null_filter_query, _connector=Q.AND)
+            | Q(**false_filter_query, _connector=Q.AND)
+        )
+        filter_list.append(f"No Routing")
 
-    filter_string = ", ".join(filter_list)
+    if query is not None and query != '':
+        for key in query:
+            value = query.get(key)
+            if value != '':
+                if key == 'q':
+                    filter_query['longtitle__icontains'] = value
+                    filter_query['kristalname__icontains'] = value
+                    filter_query['kristalref__icontains'] = value
+                    filter_list.append(f"Grant Name or Kristal Reference contains '{value}'")
+                if key == 'grantstatus':
+                    pp_advanced_filter_query['grantstatus__iexact'] = value
+                    filter_list.append(f"Grant Status is '{value}'")
+                if key == 'phasetype':
+                    pp_advanced_filter_query['phasetype__iexact'] = value
+                    filter_list.append(f"Phase Type is '{value}'")
+                if key == 'phasestatus':
+                    pp_advanced_filter_query['phasestatus__iexact'] = value
+                    filter_list.append(f"Phase Status is '{value}'")
+                if key == 'location':
+                    pp_advanced_filter_query['location__iexact'] = value
+                    filter_list.append(f"Location is '{value}'")
+                if key == 'faculty':
+                    pp_advanced_filter_query['faculty__iexact'] = value
+                    filter_list.append(f"Faculty is '{value}'")
+
+                if key == 'laser':
+                    advanced_filter_query['laser__iexact'] = True
+                    filter_list.append(f"LASER = {True}")
+                if key == 'dsdp':
+                    advanced_filter_query['dsdp__iexact'] = True
+                    filter_list.append(f"DSDP = {True}")
+                if key == 'ridm':
+                    advanced_filter_query['ridm__iexact'] = True
+                    filter_list.append(f"RIDM = {True}")
+                if key == 'community':
+                    advanced_filter_query['community__iexact'] = True
+                    filter_list.append(f"Community = {True}")
+
+        grants = grants.filter(
+            Q(**filter_query, _connector=Q.OR)
+            , Q(**advanced_filter_query, _connector=Q.AND)
+            , Q(**pp_advanced_filter_query, _connector=Q.AND)
+        )
+
+        filter_string = ", ".join(filter_list)
+        
     grant_search_form = GrantSearchForm()
     portfolio_plus_search_form = PortfolioPlusSearchForm()
 
@@ -1480,40 +1495,6 @@ def grantcreate(request):
     if request.method == 'GET':
         kristal_form = KristalForm()
         return render(request, 'Prism/grant_new.html', {'kristal_form':kristal_form})
-
-@login_required
-@permission_required(["Prism.view_tblkristal"], raise_exception=True)
-def grants_no_routing(request):
-
-    null_filter_query = {"laser__isnull": True
-                             , "dsdp__isnull": True
-                             , "ridm__isnull": True
-                             , "community__isnull": True}
-    false_filter_query = {"laser": False
-                             , "dsdp": False
-                             , "ridm": False
-                             , "community": False}
-
-    grants = Tblkristal.objects.filter(
-            Q(**null_filter_query, _connector=Q.AND)
-            | Q(**false_filter_query, _connector=Q.AND)
-            , validto__isnull=True
-        ).values(
-            "kristalid"
-            , "kristalnumber"
-            , "kristalref"
-            , "kristalname"
-            , "grantstageid__grantstagedescription"
-            , "location__locationdescription"
-            , "faculty__facultydescription"
-        ).order_by("validfrom", "kristalref")
-
-    filter_string = "No Routing"
-    grant_search_form = GrantSearchForm()
-
-    return render(request, 'Prism/grants.html', {'grants': grants
-                                                   ,'grant_form': grant_search_form
-                                                   ,'searchterms': filter_string})
 
 @login_required
 @permission_required(["Prism.view_tbldsas", "Prism.view_tbldsadataowners"], raise_exception=True)

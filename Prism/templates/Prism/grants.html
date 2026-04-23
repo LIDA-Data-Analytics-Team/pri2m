@@ -12,7 +12,11 @@ Pri2m: All Grants
 {% endif %}
 <h4>Displaying: {{ grants|length }}</h4>
 
+{% if request.path == "/grants_no_routing" %}
+<form action="/grants_no_routing" method="get">
+{% else %}
 <form action="/grants" method="get">
+{% endif %}
     <div class="input-group">
         <input name="q" type="text" class="form-control" placeholder="Search...">
         <button class="btn btn-primary" type="submit" id="button-search">Search</button>
