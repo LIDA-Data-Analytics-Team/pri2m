@@ -13,14 +13,16 @@ from .models import Tblproject, Tbluser, Tblprojectnotes, Tblprojectdocument, Tl
     , Tblprojectdatallocation, Tbluserproject, Tblkristal, Tblprojectkristal, Tlkstage, Tlkfaculty, Tlkclassification \
     , Tlkuserstatus, Tblusernotes, Tblprojectkristal, tlkGrantStage, Tlklocation, Tblkristalnotes, Tbldsas, Tbldsanotes \
     , Tbldsasprojects, Tbldsadataowners, Tlktransferrequesttypes, Tbltransferrequest, Tbltransferfile, Tbltransferfileasset \
-    , Tbldsdpcohort
+    , Tbldsdpcohort, tblPortfolioPlus
 from .forms import  ProjectSearchForm, ProjectForm, ProjectNotesForm, ProjectDocumentsForm, ProjectPlatformInfoForm \
     , ProjectDatAllocationForm, UserSearchForm, UserForm, UserProjectForm, UserNotesForm, KristalForm, ProjectKristalForm \
     , GrantSearchForm, GrantNotesForm, DsaForm, DsaNotesForm, ProjectDsaForm, DsaSearchForm, DataOwnerCreateForm, TransferSearchForm \
-    , TransferForm, TransferfileForm, DSDPCohortForm
+    , TransferForm, TransferfileForm, DSDPCohortForm, PortfolioPlusSearchForm
 import pandas as pd
+import numpy as np
 from collections import namedtuple
 import json
+from decimal import Decimal, ROUND_HALF_UP
 
 def index(request):
     return render(request, 'Prism/index.html')
@@ -1120,28 +1122,95 @@ def projectkristal_remove(request, projectkristalid):
 @permission_required(["Prism.view_tblkristal"], raise_exception=True)
 def grants(request):
     query = request.GET
-
     filter_query = {}
+    pp_advanced_filter_query = {}
     advanced_filter_query = {}
     filter_list = []
+
+    pp_grantstatus = tblPortfolioPlus.objects.filter(
+                        validto__isnull=True
+                        , grant = OuterRef('kristalref')
+                        ).values("grantstatus")
+    pp_phasetype = tblPortfolioPlus.objects.filter(
+                        validto__isnull=True
+                        , grant = OuterRef('kristalref')
+                        ).values("phasetype")
+    pp_phasestatus = tblPortfolioPlus.objects.filter(
+                        validto__isnull=True
+                        , grant = OuterRef('kristalref')
+                        ).values("phasestatus")
+    pp_longtitle = tblPortfolioPlus.objects.filter(
+                        validto__isnull=True
+                        , grant = OuterRef('kristalref')
+                        ).values("longtitle")
+    pp_location = tblPortfolioPlus.objects.filter(
+                        validto__isnull=True
+                        , grant = OuterRef('kristalref')
+                        ).values("location")    
+    pp_faculty = tblPortfolioPlus.objects.filter(
+                        validto__isnull=True
+                        , grant = OuterRef('kristalref')
+                        ).values("faculty")
+
+    grants = Tblkristal.objects.filter(
+            validto__isnull=True
+        ).values('kristalid'
+            , 'kristalref'
+            , 'kristalnumber'
+            , 'kristalname'
+            , 'laser'
+            , 'dsdp'
+            , 'ridm'
+            , 'community'
+        ).annotate(
+            grantstatus = Subquery(pp_grantstatus)
+            , phasetype = Subquery(pp_phasetype)
+            , phasestatus = Subquery(pp_phasestatus)
+            , longtitle = Subquery(pp_longtitle)
+            , location = Subquery(pp_location)
+            , faculty = Subquery(pp_faculty)
+        )
+
+    if request.path == '/grants_no_routing':
+        null_filter_query = {"laser__isnull": True
+                                , "dsdp__isnull": True
+                                , "ridm__isnull": True
+                                , "community__isnull": True}
+        false_filter_query = {"laser": False
+                                , "dsdp": False
+                                , "ridm": False
+                                , "community": False}
+        grants = grants.filter(
+            Q(**null_filter_query, _connector=Q.AND)
+            | Q(**false_filter_query, _connector=Q.AND)
+        )
+        filter_list.append(f"No Routing")
 
     if query is not None and query != '':
         for key in query:
             value = query.get(key)
             if value != '':
                 if key == 'q':
+                    filter_query['longtitle__icontains'] = value
                     filter_query['kristalname__icontains'] = value
                     filter_query['kristalref__icontains'] = value
-                    filter_list.append(f"Kristal Name or Reference contains '{value}'")
-                if key == 'grantstageid_id':
-                    advanced_filter_query['grantstageid__grantstageid__iexact'] = value
-                    filter_list.append(f"Grant Stage is '{tlkGrantStage.objects.get(grantstageid=value)}'")
-                if key == 'faculty_id':
-                    advanced_filter_query['faculty__facultyid__iexact'] = value
-                    filter_list.append(f"Faculty is '{Tlkfaculty.objects.get(facultyid=value)}'")
-                if key == 'location_id':
-                    advanced_filter_query['location__locationid__iexact'] = value
-                    filter_list.append(f"Location is '{Tlklocation.objects.get(locationid=value)}'")
+                    filter_list.append(f"Grant Name or Kristal Reference contains '{value}'")
+                if key == 'grantstatus':
+                    pp_advanced_filter_query['grantstatus__iexact'] = value
+                    filter_list.append(f"Grant Status is '{value}'")
+                if key == 'phasetype':
+                    pp_advanced_filter_query['phasetype__iexact'] = value
+                    filter_list.append(f"Phase Type is '{value}'")
+                if key == 'phasestatus':
+                    pp_advanced_filter_query['phasestatus__iexact'] = value
+                    filter_list.append(f"Phase Status is '{value}'")
+                if key == 'location':
+                    pp_advanced_filter_query['location__iexact'] = value
+                    filter_list.append(f"Location is '{value}'")
+                if key == 'faculty':
+                    pp_advanced_filter_query['faculty__iexact'] = value
+                    filter_list.append(f"Faculty is '{value}'")
+
                 if key == 'laser':
                     advanced_filter_query['laser__iexact'] = True
                     filter_list.append(f"LASER = {True}")
@@ -1154,26 +1223,21 @@ def grants(request):
                 if key == 'community':
                     advanced_filter_query['community__iexact'] = True
                     filter_list.append(f"Community = {True}")
-                
-    grants = Tblkristal.objects.filter(
+
+        grants = grants.filter(
             Q(**filter_query, _connector=Q.OR)
             , Q(**advanced_filter_query, _connector=Q.AND)
-            , validto__isnull=True
-        ).values(
-            "kristalid"
-            , "kristalnumber"
-            , "kristalref"
-            , "kristalname"
-            , "grantstageid__grantstagedescription"
-            , "location__locationdescription"
-            , "faculty__facultydescription"
-        ).order_by("kristalref")
+            , Q(**pp_advanced_filter_query, _connector=Q.AND)
+        )
 
-    filter_string = ", ".join(filter_list)
+        filter_string = ", ".join(filter_list)
+        
     grant_search_form = GrantSearchForm()
+    portfolio_plus_search_form = PortfolioPlusSearchForm()
 
     return render(request, 'Prism/grants.html', {'grants': grants
                                                    ,'grant_form': grant_search_form
+                                                   ,'portfolio_plus_search_form': portfolio_plus_search_form
                                                    ,'searchterms': filter_string})
 
 @login_required
@@ -1195,6 +1259,10 @@ def grant(request, kristalnumber):
         validto__isnull=True
         ,projectnumber=OuterRef("projectnumber")
     ).values("projectname")
+    projectstages = Tblproject.objects.filter(
+        validto__isnull=True
+        ,projectnumber=OuterRef("projectnumber")
+    ).values("stage__pstagedescription")
     project_laser = Tblproject.objects.filter(
         validto__isnull=True
         ,projectnumber=OuterRef("projectnumber")
@@ -1209,6 +1277,7 @@ def grant(request, kristalnumber):
         , kristalnumber=kristalnumber
     ).values(
     ).annotate(projectname = Subquery(projectnames)
+               , stage = Subquery(projectstages)
                , laser = Subquery(project_laser)
                , dsdp = Subquery(project_dsdp)
     ).order_by("projectnumber")
@@ -1234,6 +1303,16 @@ def grant(request, kristalnumber):
     except EmptyPage:
         page_obj = paginator.page(paginator.num_pages)
 
+    ## PORTFOLIO PLUS ##
+    try:
+        portfolio_plus = tblPortfolioPlus.objects.filter(
+            validto__isnull=True
+            , grant=grant['kristalref']
+        ).values(
+        ).get()         # get() with no arguments will raise an exception if the queryset doesn't contain exactly one item
+    except:
+        portfolio_plus = None
+
     ## CREATE FORMS ##
     grant_form = KristalForm(initial=grant, prefix='grant')
     grant_project_form = ProjectKristalForm(prefix='grant_project')
@@ -1246,6 +1325,7 @@ def grant(request, kristalnumber):
 
     context={'grant': grant
             , 'grant_form': grant_form
+            , 'portfolio_plus': portfolio_plus
             , 'grant_project': grant_project
             , 'grant_project_form': grant_project_form
             , 'notes':page_obj
@@ -1287,17 +1367,16 @@ def grant(request, kristalnumber):
                 ).get() 
 
                 # Only save record if fields have changed
-                if recordchanged(existing_record=existing_grant, form_set=insert):
-                    insert.save(force_insert=True)
-
-                    delete = Tblkristal(
-                        kristalid = kristalid
-                        ,validto = timezone.now()
-                    )
-                    delete.save(update_fields=["validto"])
-                
-                    messages.success(request, 'Grant updated successfully.')
-                return HttpResponseRedirect(f"/grant/{kristalnumber}")
+                with transaction.atomic():
+                    if recordchanged(existing_record=existing_grant, form_set=insert):
+                        delete = Tblkristal(
+                            kristalid = kristalid
+                            ,validto = timezone.now()
+                        )
+                        delete.save(update_fields=["validto"])
+                        insert.save(force_insert=True)                   
+                        messages.success(request, 'Grant updated successfully.')
+                    return HttpResponseRedirect(f"/grant/{kristalnumber}")
             else:
                 context['grant_form']=grant_form
 
@@ -1416,40 +1495,6 @@ def grantcreate(request):
     if request.method == 'GET':
         kristal_form = KristalForm()
         return render(request, 'Prism/grant_new.html', {'kristal_form':kristal_form})
-
-@login_required
-@permission_required(["Prism.view_tblkristal"], raise_exception=True)
-def grants_no_routing(request):
-
-    null_filter_query = {"laser__isnull": True
-                             , "dsdp__isnull": True
-                             , "ridm__isnull": True
-                             , "community__isnull": True}
-    false_filter_query = {"laser": False
-                             , "dsdp": False
-                             , "ridm": False
-                             , "community": False}
-
-    grants = Tblkristal.objects.filter(
-            Q(**null_filter_query, _connector=Q.AND)
-            | Q(**false_filter_query, _connector=Q.AND)
-            , validto__isnull=True
-        ).values(
-            "kristalid"
-            , "kristalnumber"
-            , "kristalref"
-            , "kristalname"
-            , "grantstageid__grantstagedescription"
-            , "location__locationdescription"
-            , "faculty__facultydescription"
-        ).order_by("validfrom", "kristalref")
-
-    filter_string = "No Routing"
-    grant_search_form = GrantSearchForm()
-
-    return render(request, 'Prism/grants.html', {'grants': grants
-                                                   ,'grant_form': grant_search_form
-                                                   ,'searchterms': filter_string})
 
 @login_required
 @permission_required(["Prism.view_tbldsas", "Prism.view_tbldsadataowners"], raise_exception=True)
@@ -2038,3 +2083,154 @@ def transfercreate(request, projectnumber):
 
     if request.method == 'GET':
         return render(request, 'Prism/transfer_new.html', context)
+
+
+def grants_update(request):
+    context = {'updated': None
+                ,'inserted': None}
+    
+    if request.method == 'POST':
+        context = {'updated': 0
+                ,'inserted': 0}
+
+        file = request.FILES['files']
+        path = file.file
+
+        pp_df = pd.read_excel(path, skiprows=2)
+        pp_df = pp_df.rename(columns=lambda x: x.strip())
+
+        lida_grants = Tblkristal.objects.filter(
+            validto__isnull=True
+            ).values('kristalref'
+            ).order_by('kristalref')
+        lida_grants_df = pd.DataFrame(lida_grants)
+        
+        pp_df = pd.merge(pp_df, lida_grants_df, left_on='Grant', right_on='kristalref', how='inner')
+
+        pp_df_leeds_price = pp_df.groupby(['Grant'], as_index=False
+                    ).agg(total_leeds_price=('Leeds Price (£)', 'sum'))
+
+        # Using regex to pattern match 'No ref', replace with None, remove duplicates then prefer External Ref values over None
+        pp_df['External Ref.'] = pp_df['External Ref.'].replace(
+                                    r'(?i)^(not known|no\b.*\b(ref|reference)\b)',
+                                    None,
+                                    regex=True
+                                    )
+        pp_df = pp_df.loc[pp_df["Role"] == "PI", ['Grant Status'
+                                ,'Phase Type'
+                                ,'Phase Status'
+                                ,'Grant'
+                                ,'Long Title'
+                                ,'External Ref.'
+                                ,'Role'
+                                ,'Investigator'
+                                ,'Location'
+                                ,'Faculty'
+                                ,'Research Start'
+                                ,'Research End'
+                                ,'Outline Date'
+                                ,'Application Date'
+                                ,'Award Date']].drop_duplicates()
+        pp_df=pp_df.groupby('Grant').first()
+
+        pp_df_new = pd.merge(pp_df, pp_df_leeds_price, left_on='Grant', right_on='Grant', how='inner')
+
+        pp_existing = tblPortfolioPlus.objects.filter(validto__isnull = True).values()
+        pp_df_existing = pd.DataFrame(pp_existing)
+
+        with transaction.atomic():
+        # outer join dataframes, left_on = Prism right_on = Portfolio Plus
+            df_all = pd.merge(pp_df_existing, pp_df_new, left_on='grant', right_on='Grant', how='outer', indicator=True)
+            df_all = df_all.replace({np.nan: None})
+
+            # left_only = present in Prism not in Portfolio Plus = Nothing to do
+
+            # both = present in Prism and in Portfolio Plus  
+                # no difference = no action 
+                # difference = logically delete in Prism and insert new record 
+            df_update = df_all.loc[df_all['_merge'] == 'both']
+
+            if df_update.shape[0] > 0:
+                                        # Pandas doesn't always treat None == None, need to explicitly also compare None values (and in our case invert the logic with a tilde)  
+                df_update = df_update.loc [(df_update['Grant Status'] != df_update['grantstatus']) & ~(df_update['Grant Status'].isna() & df_update['grantstatus'].isna())
+                                            | (df_update['Phase Type'] != df_update['phasetype']) & ~(df_update['Phase Type'].isna() & df_update['phasetype'].isna())
+                                            | (df_update['Phase Status'] != df_update['phasestatus']) & ~(df_update['Phase Status'].isna() & df_update['phasestatus'].isna())
+                                            | (df_update['Grant'] != df_update['grant']) & ~(df_update['Grant'].isna() & df_update['grant'].isna())
+                                            | (df_update['Long Title'] != df_update['longtitle']) & ~(df_update['Long Title'].isna() & df_update['longtitle'].isna())
+                                            | (df_update['External Ref.'] != df_update['externalref']) & ~(df_update['External Ref.'].isna() & df_update['externalref'].isna())
+                                            | (df_update['Investigator'] != df_update['pi']) & ~(df_update['Investigator'].isna() & df_update['pi'].isna())
+                                            | (df_update['Location'] != df_update['location']) & ~(df_update['Location'].isna() & df_update['location'].isna())
+                                            | (df_update['Faculty'] != df_update['faculty']) & ~(df_update['Faculty'].isna() & df_update['faculty'].isna())
+                                            # Dates are fuckey.  
+                                            | (pd.to_datetime(df_update['Research Start']) != pd.to_datetime(df_update['researchstart'])) & ~(df_update['Research Start'].isna() & df_update['researchstart'].isna())
+                                            | (pd.to_datetime(df_update['Research End']) != pd.to_datetime(df_update['researchend'])) & ~(df_update['Research End'].isna() & df_update['researchend'].isna())
+                                            | (pd.to_datetime(df_update['Outline Date']) != pd.to_datetime(df_update['outlinedate'])) & ~(df_update['Outline Date'].isna() & df_update['outlinedate'].isna())
+                                            | (pd.to_datetime(df_update['Application Date']) != pd.to_datetime(df_update['applicationdate'])) & ~(df_update['Application Date'].isna() & df_update['applicationdate'].isna())
+                                            | (pd.to_datetime(df_update['Award Date']) != pd.to_datetime(df_update['awarddate'])) & ~(df_update['Award Date'].isna() & df_update['awarddate'].isna())
+                                            # Need to convert excel sourced float to decimal for comparison
+                                            | (df_update["total_leeds_price"].apply(lambda x: Decimal(str(x)).quantize(Decimal("0.00"), rounding=ROUND_HALF_UP) if x is not None else None) != df_update['leedsprice'])]
+
+                if df_update.shape[0] > 0:
+                    for index, row in df_update.iterrows():
+                        delete = tblPortfolioPlus.objects.filter(
+                            ppid=row['ppid']
+                        ).values()
+                        delete.update(validto = timezone.now())
+
+                        insert = tblPortfolioPlus(
+                            grantstatus = row['Grant Status']
+                            ,phasetype = row['Phase Type']
+                            ,phasestatus = row['Phase Status']
+                            ,grant = row['Grant']
+                            ,longtitle = row['Long Title']
+                            ,externalref = row['External Ref.']
+                            ,pi = row['Investigator']
+                            ,location = row['Location']
+                            ,faculty = row['Faculty']
+                            ,researchstart = row['Research Start']
+                            ,researchend = row['Research End']
+                            ,outlinedate = row['Outline Date']
+                            ,applicationdate = row['Application Date']
+                            ,awarddate = row['Award Date']
+                            ,leedsprice = row['total_leeds_price']
+                            ,validfrom = timezone.now()
+                            ,validto = None
+                            ,createdby = request.user
+                        )
+                        insert.save(force_insert=True)
+                    # updated_to_display = df_update.to_html()
+                    # context['updated'] = updated_to_display
+                    context['updated'] = len(df_update.index)
+                    
+            # right_only = present in Portfolio Plus not in Prism = insert new record    
+            df_insert = df_all.loc[df_all['_merge'] == 'right_only']
+            if df_insert.shape[0] > 0:
+                for index, row in df_insert.iterrows():
+                        insert = tblPortfolioPlus(
+                            grantstatus = row['Grant Status']
+                            ,phasetype = row['Phase Type']
+                            ,phasestatus = row['Phase Status']
+                            ,grant = row['Grant']
+                            ,longtitle = row['Long Title']
+                            ,externalref = row['External Ref.']
+                            ,pi = row['Investigator']
+                            ,location = row['Location']
+                            ,faculty = row['Faculty']
+                            ,researchstart = row['Research Start']
+                            ,researchend = row['Research End']
+                            ,outlinedate = row['Outline Date']
+                            ,applicationdate = row['Application Date']
+                            ,awarddate = row['Award Date']
+                            ,leedsprice = row['total_leeds_price']
+                            ,validfrom = timezone.now()
+                            ,validto = None
+                            ,createdby = request.user
+                        )
+                        insert.save(force_insert=True)
+
+                # inserted_to_display = df_insert.to_html()
+                # context['inserted'] = inserted_to_display
+                context['inserted'] = len(df_insert.index)
+
+    return render(request, 'Prism/grants_update.html', context)
+

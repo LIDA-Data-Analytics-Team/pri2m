@@ -4,7 +4,7 @@ from .models import Tlkstage, Tblproject, Tlkclassification, Tlkfaculty, Tbluser
     , Tlkdocuments, Tblprojectplatforminfo, Tlkplatforminfo, Tblprojectdatallocation, Tlkuserstatus, Tbluserproject \
     , Tblusernotes, tlkGrantStage, Tlklocation, Tblkristal, Tblprojectkristal, Tblkristalnotes, Tbldsas, Tbldsadataowners \
     , Tbldsanotes, Tbldsasprojects, Tbltransferrequest, Tlktransferrequesttypes, Tlkfiletransfermethods, Tbltransferfileasset \
-    , Tbltransferfile, Tbldsdpcohort
+    , Tbltransferfile, Tbldsdpcohort, tblPortfolioPlus
 from django.utils import timezone
 
 class DateInput(forms.DateInput):
@@ -201,8 +201,9 @@ class KristalForm(forms.Form):
     def clean(self):
         cleaned_data = super().clean()
         kristalref = cleaned_data.get("kristalref")
+        kristalnumber = cleaned_data.get("kristalnumber")
 
-        if Tblkristal.objects.filter(validto__isnull=True, kristalref=kristalref).exists():
+        if Tblkristal.objects.filter(validto__isnull=True, kristalref=kristalref).exclude(kristalnumber=kristalnumber).exists():
             self.add_error(None, "That KristalRef already exists in Prism")
 
         return self.cleaned_data
@@ -353,9 +354,9 @@ class UserNotesForm(forms.Form):
         model = Tblusernotes
 
 class GrantSearchForm(forms.Form):
-    grantstageid_id = forms.ModelChoiceField(label="Stage", queryset=tlkGrantStage.objects.filter(validto__isnull=True).order_by("stagenumber"), required=False )
-    faculty_id = forms.ModelChoiceField(label="Faculty", queryset=Tlkfaculty.objects.filter(validto__isnull=True).order_by("facultydescription"), required=False )
-    location_id = forms.ModelChoiceField(label="Location", queryset=Tlklocation.objects.filter(validto__isnull=True).order_by("locationdescription"), required=False )
+    # grantstageid_id = forms.ModelChoiceField(label="Stage", queryset=tlkGrantStage.objects.filter(validto__isnull=True).order_by("stagenumber"), required=False )
+    # faculty_id = forms.ModelChoiceField(label="Faculty", queryset=Tlkfaculty.objects.filter(validto__isnull=True).order_by("facultydescription"), required=False )
+    # location_id = forms.ModelChoiceField(label="Location", queryset=Tlklocation.objects.filter(validto__isnull=True).order_by("locationdescription"), required=False )
     laser= forms.BooleanField(label="LASER", required=False)
     dsdp= forms.BooleanField(label="DSDP", required=False)
     ridm= forms.BooleanField(label="RIDM", required=False)
@@ -561,3 +562,13 @@ class TransferfileassetForm(forms.Form):
 
     class Meta:
         model = Tbltransferfileasset
+
+class PortfolioPlusSearchForm (forms.Form):
+    grantstatus = forms.ChoiceField(label="Grant Status", choices=[('', '')] + list(tblPortfolioPlus.objects.filter(validto__isnull=True).values_list('grantstatus', 'grantstatus').order_by("grantstatus").distinct()), required=False)
+    phasetype = forms.ChoiceField(label="Phase Type", choices=[('', '')] + list(tblPortfolioPlus.objects.filter(validto__isnull=True).values_list('phasetype', 'phasetype').order_by("phasetype").distinct()), required=False)
+    phasestatus = forms.ChoiceField(label="Phase Status", choices=[('', '')] + list(tblPortfolioPlus.objects.filter(validto__isnull=True).values_list('phasestatus', 'phasestatus').order_by("phasestatus").distinct()), required=False)
+    location = forms.ChoiceField(label="Location", choices=[('', '')] + list(tblPortfolioPlus.objects.filter(validto__isnull=True).values_list('location', 'location').order_by("location").distinct()), required=False)
+    faculty = forms.ChoiceField(label="Faculty", choices=[('', '')] + list(tblPortfolioPlus.objects.filter(validto__isnull=True).values_list('faculty', 'faculty').order_by("faculty").distinct()), required=False)
+
+    class Meta:
+        model = tblPortfolioPlus

@@ -551,4 +551,28 @@ class Tlktransferrequesttypes(models.Model):
         managed = False
         db_table = 'tlkTransferRequestTypes'
 
-    
+
+class tblPortfolioPlus (models.Model):
+    ppid = models.AutoField(db_column='ppid', primary_key=True)
+    grantstatus = models.CharField(db_column='GrantStatus', max_length=12, blank=True, null=True)
+    phasetype = models.CharField(db_column='PhaseType', max_length=25, blank=True, null=True)
+    phasestatus = models.CharField(db_column='PhaseStatus', max_length=50, blank=True, null=True)
+    grant = models.DecimalField(db_column='Grant', max_digits=6, decimal_places=0, blank=True, null=True)
+    longtitle = models.CharField(db_column='LongTitle', max_length=255, blank=True, null=True)
+    externalref = models.CharField(db_column='ExternalRef', max_length=50, blank=True, null=True)
+    pi = models.CharField(db_column='PI', max_length=75, blank=True, null=True)
+    location = models.CharField(db_column='Location', max_length=50, blank=True, null=True)
+    faculty = models.CharField(db_column='Faculty', max_length=50, blank=True, null=True)
+    researchstart = models.DateField(db_column='ResearchStart', blank=True, null=True)
+    researchend = models.DateField(db_column='ResearchEnd', blank=True, null=True)
+    outlinedate = models.DateField(db_column='OutlineDate', blank=True, null=True)
+    applicationdate = models.DateField(db_column='ApplicationDate', blank=True, null=True)
+    awarddate = models.DateField(db_column='AwardDate', blank=True, null=True)
+    leedsprice = models.DecimalField(db_column='LeedsPrice', max_digits=11, decimal_places=2, blank=True, null=True)
+    validfrom = models.DateTimeField(db_column='ValidFrom', blank=True, null=True)
+    validto = models.DateTimeField(db_column='ValidTo', blank=True, null=True)
+    createdby = models.CharField(db_column='CreatedBy', max_length=50, blank=True, null=True)
+
+    class Meta:
+        managed = False
+        db_table = 'tblPortfolioPlus'
