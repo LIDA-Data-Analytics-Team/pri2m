@@ -1134,8 +1134,9 @@ def grants(request):
             if value != '':
                 if key == 'q':
                     filter_query['longtitle__icontains'] = value
-                    filter_query['grant__icontains'] = value
-                    filter_list.append(f"Kristal Name or Reference contains '{value}'")
+                    filter_query['kristalname__icontains'] = value
+                    filter_query['kristalref__icontains'] = value
+                    filter_list.append(f"Grant Name or Kristal Reference contains '{value}'")
                 if key == 'grantstatus':
                     pp_advanced_filter_query['grantstatus__iexact'] = value
                     filter_list.append(f"Grant Status is '{value}'")
@@ -1166,45 +1167,32 @@ def grants(request):
                     filter_list.append(f"Community = {True}")
 
     pp_grantstatus = tblPortfolioPlus.objects.filter(
-                        Q(**filter_query, _connector=Q.OR)
-                        , Q(**pp_advanced_filter_query, _connector=Q.AND)
-                        , validto__isnull=True
+                        validto__isnull=True
                         , grant = OuterRef('kristalref')
                         ).values("grantstatus")
     pp_phasetype = tblPortfolioPlus.objects.filter(
-                        Q(**filter_query, _connector=Q.OR)
-                        , Q(**pp_advanced_filter_query, _connector=Q.AND)
-                        , validto__isnull=True
+                        validto__isnull=True
                         , grant = OuterRef('kristalref')
                         ).values("phasetype")
     pp_phasestatus = tblPortfolioPlus.objects.filter(
-                        Q(**filter_query, _connector=Q.OR)
-                        , Q(**pp_advanced_filter_query, _connector=Q.AND)
-                        , validto__isnull=True
+                        validto__isnull=True
                         , grant = OuterRef('kristalref')
                         ).values("phasestatus")
     pp_longtitle = tblPortfolioPlus.objects.filter(
-                        Q(**filter_query, _connector=Q.OR)
-                        , Q(**pp_advanced_filter_query, _connector=Q.AND)
-                        , validto__isnull=True
+                        validto__isnull=True
                         , grant = OuterRef('kristalref')
                         ).values("longtitle")
     pp_location = tblPortfolioPlus.objects.filter(
-                        Q(**filter_query, _connector=Q.OR)
-                        , Q(**pp_advanced_filter_query, _connector=Q.AND)
-                        , validto__isnull=True
+                        validto__isnull=True
                         , grant = OuterRef('kristalref')
                         ).values("location")    
     pp_faculty = tblPortfolioPlus.objects.filter(
-                        Q(**filter_query, _connector=Q.OR)
-                        , Q(**pp_advanced_filter_query, _connector=Q.AND)
-                        , validto__isnull=True
+                        validto__isnull=True
                         , grant = OuterRef('kristalref')
                         ).values("faculty")
 
     grants = Tblkristal.objects.filter(
-            Q(**advanced_filter_query, _connector=Q.AND)
-            , validto__isnull=True
+            validto__isnull=True
         ).values('kristalid'
             , 'kristalref'
             , 'kristalnumber'
@@ -1221,6 +1209,11 @@ def grants(request):
             , faculty = Subquery(pp_faculty)
         )
 
+    grants = grants.filter(
+        Q(**filter_query, _connector=Q.OR)
+        , Q(**advanced_filter_query, _connector=Q.AND)
+        , Q(**pp_advanced_filter_query, _connector=Q.AND)
+    )
 
     filter_string = ", ".join(filter_list)
     grant_search_form = GrantSearchForm()
