@@ -35,108 +35,132 @@ Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
 
 <div class="container-fluid">
     <div class="row">
-        <div class="col-md-12">
+        <div class="col-12">
             <form action="" method = "POST">
                 {% csrf_token %}
                 <p><input class="btn btn-primary" type="submit" value="Submit"></p>
                 <div class="container-fluid">
                     <div class="row">
-                        <div class="col-md-auto">
+                        <div class="col-8" style="text-align:right;">
 
                             <legend>Grant Details</legend>
-                            {% if portfolio_plus %}
-                                <p><small>Last Updated {{portfolio_plus.validfrom | date:"Y-m-d"}}</small></p>
-                                <div class="container-fluid">
-                                    <div class="row">
-                                        <div class="col-md-auto">
-                                            <table class="table table-hover">
-                                                <tbody>
-                                                    <tr>
-                                                        <td><strong>Grant Status</strong></td>
-                                                        <td>{{ portfolio_plus.grantstatus|default_if_none:"" }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>Phase Type</strong></td>
-                                                        <td>{{ portfolio_plus.phasetype|default_if_none:"" }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>Phase Status</strong></td>
-                                                        <td>{{ portfolio_plus.phasestatus|default_if_none:"" }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>Ext. Ref.</strong></td>
-                                                        <td>{{ portfolio_plus.externalref|default_if_none:"" }}</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div class="col-md-auto">
-                                            <table class="table table-hover">
-                                                <tbody>
-                                                    <tr>
-                                                        <td><strong>Total Leeds Price</strong></td>
-                                                        <td>£{{ portfolio_plus.leedsprice|default_if_none:"-"|intcomma }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>PI</strong></td>
-                                                        <td>{{ portfolio_plus.pi|default_if_none:"" }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>Location</strong></td>
-                                                        <td>{{ portfolio_plus.location|default_if_none:"" }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>Faculty</strong></td>
-                                                        <td>{{ portfolio_plus.faculty|default_if_none:"" }}</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                        <div class="col-md-auto">
-                                            <table class="table table-hover">
-                                                <tbody>
-                                                    <tr>
-                                                        <td><strong>Research End</strong></td>
-                                                        <td>{{ portfolio_plus.researchend|default_if_none:"" }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>Outline Date</strong></td>
-                                                        <td>{{ portfolio_plus.outlinedate|default_if_none:"" }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>Application Date</strong></td>
-                                                        <td>{{ portfolio_plus.applicationdate|default_if_none:"" }}</td>
-                                                    </tr>
-                                                    <tr>
-                                                        <td><strong>Award Date</strong></td>
-                                                        <td>{{ portfolio_plus.awarddate|default_if_none:"" }}</td>
-                                                    </tr>
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </div>
-                            {% else %}
-                                <p>No details from Portfolio Plus present</p>
-                                <div class="container-fluid">
-                                    <div class="row">
-                                        <div class="col-md-auto">
-                                            <fieldset>
-                                                <p>{{ grant_form.kristalname.as_field_group }}</p>
-                                                <p>{{ grant_form.grantstageid_id.as_field_group }}</p>
-                                                <p>{{ grant_form.pi.as_field_group }}</p>
-                                            </fieldset>
-                                        </div>
-                                        <div class="col-md-auto">
-                                            <fieldset>
-                                                <p>{{ grant_form.location_id.as_field_group }}</p>
-                                                <p>{{ grant_form.faculty_id.as_field_group }}</p>
-                                            </fieldset>
+                            <div class="accordion accordion-flush" id="accordionGrantDetail">
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingPortPlus">
+                                        <button class="accordion-button {% if not portfolio_plus %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePortPlus" aria-expanded="true" aria-controls="collapsePortPlus">
+                                            Portfolio Plus
+                                        </button>
+                                    </h2>
+                                    <div id="collapsePortPlus" class="accordion-collapse collapse {% if portfolio_plus %}show{% endif %}" aria-labelledby="headingPortPlus" data-bs-parent="#accordionGrantDetail">
+                                        <div class="accordion-body">
+                                            {% if portfolio_plus %}
+                                            <p><small>Last Updated {{portfolio_plus.validfrom | date:"Y-m-d"}}</small></p>
+                                            <div class="container-fluid d-flex justify-content-end">
+                                                <div class="row">
+                                                    <div class="col-md-auto">
+                                                        <table class="table table-hover">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td><strong>Grant Status</strong></td>
+                                                                    <td>{{ portfolio_plus.grantstatus|default_if_none:"" }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Phase Type</strong></td>
+                                                                    <td>{{ portfolio_plus.phasetype|default_if_none:"" }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Phase Status</strong></td>
+                                                                    <td>{{ portfolio_plus.phasestatus|default_if_none:"" }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Ext. Ref.</strong></td>
+                                                                    <td>{{ portfolio_plus.externalref|default_if_none:"" }}</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <div class="col-md-auto">
+                                                        <table class="table table-hover">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td><strong>Total Leeds Price</strong></td>
+                                                                    <td>£{{ portfolio_plus.leedsprice|default_if_none:"-"|intcomma }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>PI</strong></td>
+                                                                    <td>{{ portfolio_plus.pi|default_if_none:"" }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Location</strong></td>
+                                                                    <td>{{ portfolio_plus.location|default_if_none:"" }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Faculty</strong></td>
+                                                                    <td>{{ portfolio_plus.faculty|default_if_none:"" }}</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                    <div class="col-md-auto">
+                                                        <table class="table table-hover">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td><strong>Research End</strong></td>
+                                                                    <td>{{ portfolio_plus.researchend|default_if_none:"" }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Outline Date</strong></td>
+                                                                    <td>{{ portfolio_plus.outlinedate|default_if_none:"" }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Application Date</strong></td>
+                                                                    <td>{{ portfolio_plus.applicationdate|default_if_none:"" }}</td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <td><strong>Award Date</strong></td>
+                                                                    <td>{{ portfolio_plus.awarddate|default_if_none:"" }}</td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            {% else %}
+                                            <p>No details from Portfolio Plus available.</p>
+                                            {% endif %}
                                         </div>
                                     </div>
                                 </div>
-                            {% endif %}
-                        
+                                <div class="accordion-item">
+                                    <h2 class="accordion-header" id="headingPrism">
+                                        <button class="accordion-button {% if portfolio_plus %}collapsed{% endif %}" type="button" data-bs-toggle="collapse" data-bs-target="#collapsePrism" aria-expanded="false" aria-controls="collapsePrism">
+                                            Prism
+                                        </button>
+                                    </h2>
+                                    <div id="collapsePrism" class="accordion-collapse collapse {% if not portfolio_plus %}show{% endif %}" aria-labelledby="headingPrism" data-bs-parent="#accordionGrantDetail">
+                                        <div class="accordion-body">
+                                            <div class="container-fluid d-flex justify-content-end">
+                                                <div class="row">
+                                                    <div class="col-md-auto">
+                                                        <fieldset>
+                                                            <p>{{ grant_form.kristalname.as_field_group }}</p>
+                                                            <p>{{ grant_form.grantstageid_id.as_field_group }}</p>
+                                                            <p>{{ grant_form.pi.as_field_group }}</p>
+                                                        </fieldset>
+                                                    </div>
+                                                    <div class="col-md-auto">
+                                                        <fieldset>
+                                                            <p>{{ grant_form.location_id.as_field_group }}</p>
+                                                            <p>{{ grant_form.faculty_id.as_field_group }}</p>
+                                                        </fieldset>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
                         </div>
 
                         <div class="col-md-auto">
