@@ -1119,7 +1119,7 @@ def projectkristal_remove(request, projectkristalid):
 
 
 @login_required
-@permission_required(["Prism.view_tblkristal"], raise_exception=True)
+@permission_required(["Prism.view_tblkristal", "Prism.view_tblportfolioplus"], raise_exception=True)
 def grants(request):
     query = request.GET
     filter_query = {}
@@ -1243,7 +1243,8 @@ def grants(request):
 @login_required
 @permission_required(["Prism.view_tblkristal", "Prism.add_tblkristal", "Prism.change_tblkristal"
                       , "Prism.view_tblproject", "Prism.view_tblprojectkristal", "Prism.add_tblprojectkristal", "Prism.change_tblprojectkristal"
-                      , "Prism.view_tblkristalnotes", "Prism.add_tblkristalnotes", "Prism.change_tblkristalnotes"], raise_exception=True)
+                      , "Prism.view_tblkristalnotes", "Prism.add_tblkristalnotes", "Prism.change_tblkristalnotes"
+                      , "Prism.view_tblportfolioplus"], raise_exception=True)
 def grant(request, kristalnumber):
     # Build forms
     
@@ -2084,7 +2085,8 @@ def transfercreate(request, projectnumber):
     if request.method == 'GET':
         return render(request, 'Prism/transfer_new.html', context)
 
-
+@login_required
+@permission_required(["Prism.add_tblportfolioplus", "Prism.change_tblportfolioplus"], raise_exception=True)
 def grants_update(request):
     context = {'updated': None
                 ,'inserted': None}
