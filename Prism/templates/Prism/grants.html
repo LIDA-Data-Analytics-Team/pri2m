@@ -55,7 +55,7 @@ Pri2m: All Grants
         {% for grant in grants %}
             <tr>
                 <td><a href='grant/{{ grant.kristalnumber }}'>{{ grant.kristalref|default_if_none:"" }}</a></td>
-                <td>{{ grant.longtitle|default_if_none:"" }}</td>
+                <td>{{ grant.longtitle|default_if_none:grant.kristalname }}</td>
                 <td>{{ grant.grantstatus|default_if_none:"" }}</td>
                 <td>{{ grant.phasetype|default_if_none:"" }}</td>
                 <td>{{ grant.phasestatus|default_if_none:"" }}</td>

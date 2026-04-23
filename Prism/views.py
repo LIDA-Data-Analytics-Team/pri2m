@@ -1196,6 +1196,7 @@ def grants(request):
         ).values('kristalid'
             , 'kristalref'
             , 'kristalnumber'
+            , 'kristalname'
             , 'laser'
             , 'dsdp'
             , 'ridm'
