@@ -27,6 +27,7 @@ Pri2m: All Grants
             </h2>
             <div id="collapseAdvancedSearch" class="accordion-collapse collapse" aria-labelledby="headingAdvancedSearch" data-bs-parent="#accordionAdvancedSearch">
                 <div class="accordion-body" style="text-align: right;">
+                    {{ portfolio_plus_search_form.as_p }}
                     {{ grant_form.as_p }}
                 </div>
             </div>
@@ -37,23 +38,33 @@ Pri2m: All Grants
 <table class="table table-hover">
     <thead>
         <tr>
-            <th scope="col"></th>
             <th scope="col">Kristal Ref</th>
-            <th scope="col">Kristal Name</th>
-            <th scope="col">Grant Stage</th>
-            <th scope="col">Faculty</th>
+            <th scope="col">Long Title</th>
+            <th scope="col">Grant Status</th>
+            <th scope="col">Phase Type</th>
+            <th scope="col">Phase Status</th>
             <th scope="col">Location</th>
+            <th scope="col">Faculty</th>
+            <th scope="col">LASER</th>
+            <th scope="col">DSDP</th>
+            <th scope="col">RIDM</th>
+            <th scope="col">Community</th>
         </tr>
     </thead>
     <tbody>
         {% for grant in grants %}
             <tr>
-                <td><a href='grant/{{ grant.kristalnumber }}'>Details</a></td>
-                <td>{{ grant.kristalref|default_if_none:"" }}</td>
-                <td>{{ grant.kristalname|default_if_none:"" }}</td>
-                <td>{{ grant.grantstageid__grantstagedescription|default_if_none:"" }}</td>
-                <td>{{ grant.faculty__facultydescription|default_if_none:"" }}</td>
-                <td>{{ grant.location__locationdescription|default_if_none:"" }}</td>
+                <td><a href='grant/{{ grant.kristalnumber }}'>{{ grant.kristalref|default_if_none:"" }}</a></td>
+                <td>{{ grant.longtitle|default_if_none:"" }}</td>
+                <td>{{ grant.grantstatus|default_if_none:"" }}</td>
+                <td>{{ grant.phasetype|default_if_none:"" }}</td>
+                <td>{{ grant.phasestatus|default_if_none:"" }}</td>
+                <td>{{ grant.location|default_if_none:"" }}</td>
+                <td>{{ grant.faculty|default_if_none:"" }}</td>
+                <td>{{ grant.laser|default_if_none:"" }}</td>
+                <td>{{ grant.dsdp|default_if_none:"" }}</td>
+                <td>{{ grant.ridm|default_if_none:"" }}</td>
+                <td>{{ grant.community|default_if_none:"" }}</td>
             </tr>
         {% endfor %}
     </tbody>
