@@ -176,6 +176,7 @@ Pri2m : {{ grant.kristalref|default_if_none:"Grant" }}
                                     <fieldset>
                                         {{ grant_form.kristalid.as_hidden }}
                                         {{ grant_form.kristalnumber.as_hidden }}
+                                        {{ grant_form.kristalref.as_hidden }}
                                         {% if portfolio_plus %}
                                             {{ grant_form.kristalname.as_hidden }}
                                             {{ grant_form.grantstageid_id.as_hidden }}
